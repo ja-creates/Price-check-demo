@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PriceCheck GH • Know your prices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap');
+        
+        :root {
+            --primary: #008751;
+            --secondary: #FCD116;
+            --accent: #CE1126;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Outfit', system_ui, sans-serif;
+            font-weight: 700;
+        }
+
+        .ghana-green { color: #008751; }
+        .ghana-gold { color: #FCD116; }
+        .ghana-red { color: #CE1126; }
+
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+
+        .price-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .price-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .tab-active {
+            color: #008751;
+            border-bottom: 3px solid #008751;
+            font-weight: 600;
+        }
+
+        .bottom-nav {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .metric {
+            transition: all 0.3s ease;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .price-input {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .category-chip {
+            transition: all 0.2s ease;
+        }
+        .category-chip.active {
+            background-color: #008751;
+            color: white;
+            border-color: #008751;
+        }
+
+        .ghana-gradient {
+            background: linear-gradient(135deg, #008751 0%, #006B40 100%);
+        }
+
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .market-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .toast {
+            animation: slideUp 0.3s ease forwards;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        .nav-item.active {
+            color: #008751;
+        }
+
+        .price-trend-up { color: #10B981; }
+        .price-trend-down { color: #EF4444; }
+        .price-trend-stable { color: #6B7280; }
+
+        .modal {
+            animation: modalPop 0.2s ease forwards;
+        }
+
+        .item-suggestion {
+            transition: background-color 0.1s ease;
+        }
+        .item-suggestion:hover {
+            background-color: #F3F4F6;
+        }
+
+        .district-option {
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+        .district-option:hover {
+            background-color: #F3F4F6;
+        }
+
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .price-value {
+            font-feature-settings: "tnum";
+        }
+
+        .log-success {
+            animation: successPop 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A1A2E] pb-20 md:pb-0">
+    <!-- ONBOARDING -->
+    <div id="onboarding" class="fixed inset-0 bg-white z-[100] flex items-center justify-center p-6">
+        <div class="max-w-md w-full">
+            <!-- Slide 1 -->
+            <div id="onboarding-slide-1" class="onboarding-slide">
+                <div class="text-center mb-8">
+                    <div class="mx-auto mb-6">
+                        <span class="font-display text-4xl font-bold tracking-tighter">PriceCh<span class="text-[#FCD116]">3</span>ck <span class="text-[#008751]">GH</span></span>
+                    </div>
+                    <h1 class="text-3xl font-display font-bold tracking-tight">Know your prices.<br>Protect your money.</h1>
+                    <p class="mt-4 text-[#6B7280] text-lg">PriceCheck GH helps you see real market prices across Ghana so you never get overcharged again.</p>
+                </div>
+                <div class="flex justify-center">
+                    <button onclick="nextOnboardingSlide(2)" 
+                            class="px-8 py-3.5 bg-[#008751] text-white font-semibold rounded-2xl flex items-center gap-x-2 hover:bg-[#006B40] transition-colors">
+                        Get started <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <div class="text-center mt-6">
+                    <button onclick="skipOnboarding()" class="text-sm text-[#6B7280] hover:text-[#1A1A2E]">Skip for now</button>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div id="onboarding-slide-2" class="onboarding-slide hidden">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-[#FCD116] rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-users text-[#1A1A2E] text-4xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-display font-bold tracking-tight">Log prices.<br>Help your community.</h1>
+                    <p class="mt-4 text-[#6B7280] text-lg">Every price you log makes the platform smarter for everyone. Together we protect each other from overcharging.</p>
+                </div>
+                <div class="flex justify-center gap-x-3">
+                    <button onclick="prevOnboardingSlide(1)" 
+                            class="px-6 py-3.5 border border-[#E5E7EB] font-semibold rounded-2xl hover:bg-gray-50 transition-colors">Back</button>
+                    <button onclick="nextOnboardingSlide(3)" 
+                            class="px-8 py-3.5 bg-[#008751] text-white font-semibold rounded-2xl flex items-center gap-x-2 hover:bg-[#006B40]">
+                        Continue <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide 3: Setup -->
+            <div id="onboarding-slide-3" class="onboarding-slide hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-display font-bold text-center">Let's personalize your experience</h2>
+                    <p class="text-center text-[#6B7280] mt-1">This helps us show you relevant prices</p>
+                </div>
+
+                <div class="space-y-5">
+                    <!-- Region -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Your Region</label>
+                        <select id="onboarding-region" onchange="updateOnboardingDistricts()" 
+                                class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <!-- District -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Your District</label>
+                        <select id="onboarding-district" 
+                                class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                        </select>
+                    </div>
+
+                    <!-- Nickname -->
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Nickname (optional)</label>
+                        <input type="text" id="onboarding-nickname" placeholder="Kofi or Ama" 
+                               class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                    </div>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-y-3">
+                    <button onclick="completeOnboarding()" 
+                            class="w-full py-4 bg-[#008751] text-white font-semibold rounded-2xl text-lg hover:bg-[#006B40] transition-colors">
+                        Let's go →
+                    </button>
+                    <button onclick="skipOnboarding()" class="text-sm text-[#6B7280]">I'll set this up later</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app" class="hidden max-w-[1280px] mx-auto">
+        <!-- HEADER -->
+        <header class="bg-white border-b border-[#E5E7EB] sticky top-0 z-50">
+            <div class="px-4 md:px-6 py-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-x-3">
+                    <!-- Logo (Text Only) -->
+                    <div class="flex items-center">
+                        <span class="font-display text-2xl font-bold tracking-tighter">PriceCh<span class="text-[#FCD116]">3</span>ck <span class="text-[#008751]">GH</span></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-x-2">
+                    <!-- Location Pill -->
+                    <button onclick="showLocationModal()" 
+                            class="flex items-center gap-x-2 px-3.5 py-1.5 bg-white border border-[#E5E7EB] rounded-2xl text-sm hover:bg-gray-50 transition-colors">
+                        <i class="fa-solid fa-map-marker-alt text-[#008751]"></i>
+                        <span id="header-location" class="font-medium text-sm">Kumasi, Ashanti</span>
+                    </button>
+
+                    <!-- Notification -->
+                    <button class="w-9 h-9 flex items-center justify-center text-[#6B7280] hover:text-[#1A1A2E] relative">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#CE1126] rounded-full"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- HOME TAB -->
+        <div id="tab-home" class="section active px-4 md:px-6 pt-4 pb-6">
+            <!-- Location Banner -->
+            <div class="mb-5 bg-white border border-[#E5E7EB] rounded-3xl p-4 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-x-2">
+                        <i class="fa-solid fa-map-marker-alt text-[#008751]"></i>
+                        <span class="font-semibold">Showing prices in <span id="home-location-text">Kumasi, Ashanti Region</span></span>
+                    </div>
+                    <button onclick="showLocationModal()" class="text-xs text-[#008751] font-medium mt-0.5 hover:underline">Change location</button>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-[#6B7280]">Updated just now</div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div onclick="switchTab('search')" class="mb-5 cursor-pointer">
+                <div class="relative">
+                    <input type="text" placeholder="Search for tomatoes, rice, cooking oil..." 
+                           class="w-full pl-11 pr-4 py-3.5 bg-white border border-[#E5E7EB] rounded-2xl text-sm focus:outline-none focus:border-[#008751]">
+                    <i class="fa-solid fa-search absolute left-4 top-4 text-[#9CA3AF]"></i>
+                </div>
+            </div>
+
+            <!-- Category Quick Filters -->
+            <div class="mb-5">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <span class="text-sm font-semibold">Categories</span>
+                </div>
+                <div class="flex gap-x-2 overflow-x-auto pb-2 scrollbar-hide">
+                    <div onclick="filterHomeByCategory('all')" class="category-chip active px-4 py-1.5 text-sm whitespace-nowrap border border-[#E5E7EB] rounded-2xl cursor-pointer flex items-center gap-x-1.5 bg-white" data-category="all">
+                        <span>All</span>
+                    </div>
+                    <div onclick="filterHomeByCategory('Vegetables')" class="category-chip px-4 py-1.5 text-sm whitespace-nowrap border border-[#E5E7EB] rounded-2xl cursor-pointer flex items-center gap-x-1.5 bg-white" data-category="Vegetables">
+                        <i class="fa-solid fa-carrot"></i> <span>Vegetables</span>
+                    </div>
+                    <div onclick="filterHomeByCategory('Grains & Staples')" class="category-chip px-4 py-1.5 text-sm whitespace-nowrap border border-[#E5E7EB] rounded-2xl cursor-pointer flex items-center gap-x-1.5 bg-white" data-category="Grains & Staples">
+                        <i class="fa-solid fa-wheat-awn"></i> <span>Grains</span>
+                    </div>
+                    <div onclick="filterHomeByCategory('Protein')" class="category-chip px-4 py-1.5 text-sm whitespace-nowrap border border-[#E5E7EB] rounded-2xl cursor-pointer flex items-center gap-x-1.5 bg-white" data-category="Protein">
+                        <i class="fa-solid fa-drumstick-bite"></i> <span>Protein</span>
+                    </div>
+                    <div onclick="filterHomeByCategory('Fruits')" class="category-chip px-4 py-1.5 text-sm whitespace-nowrap border border-[#E5E7EB] rounded-2xl cursor-pointer flex items-center gap-x-1.5 bg-white" data-category="Fruits">
+                        <i class="fa-solid fa-apple-alt"></i> <span>Fruits</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Stats -->
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="bg-white border border-[#E5E7EB] rounded-2xl p-3 text-center">
+                    <div id="stat-total-entries" class="text-2xl font-bold text-[#008751] stat-number">0</div>
+                    <div class="text-xs text-[#6B7280]">Prices logged</div>
+                </div>
+                <div class="bg-white border border-[#E5E7EB] rounded-2xl p-3 text-center">
+                    <div id="stat-active-contributors" class="text-2xl font-bold text-[#008751] stat-number">0</div>
+                    <div class="text-xs text-[#6B7280]">Active this week</div>
+                </div>
+                <div class="bg-white border border-[#E5E7EB] rounded-2xl p-3 text-center">
+                    <div id="stat-districts-covered" class="text-2xl font-bold text-[#008751] stat-number">0</div>
+                    <div class="text-xs text-[#6B7280]">Districts covered</div>
+                </div>
+            </div>
+
+            <!-- Price Board -->
+            <div class="mb-3 px-1 flex items-center justify-between">
+                <span class="font-semibold">Price Board</span>
+                <span onclick="refreshHomeFeed()" class="text-xs flex items-center gap-x-1 text-[#008751] cursor-pointer">
+                    <i class="fa-solid fa-sync-alt text-xs"></i> <span class="font-medium">Refresh</span>
+                </span>
+            </div>
+
+            <div id="home-price-board" class="space-y-3">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </div>
+
+        <!-- SEARCH TAB -->
+        <div id="tab-search" class="section px-4 md:px-6 pt-4 pb-6">
+            <div class="mb-4">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search items (e.g. tomatoes, rice)" 
+                           onkeyup="performSearch()"
+                           class="w-full pl-11 pr-4 py-3.5 bg-white border border-[#E5E7EB] rounded-2xl text-sm focus:outline-none focus:border-[#008751]">
+                    <i class="fa-solid fa-search absolute left-4 top-4 text-[#9CA3AF]"></i>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 mb-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-[#6B7280]">Region</label>
+                        <select id="search-region" onchange="updateSearchDistricts(); performSearch()" class="w-full mt-1 px-3 py-2 border border-[#E5E7EB] rounded-xl text-sm">
+                            <option value="">All Regions</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-[#6B7280]">District</label>
+                        <select id="search-district" onchange="performSearch()" class="w-full mt-1 px-3 py-2 border border-[#E5E7EB] rounded-xl text-sm">
+                            <option value="">All Districts</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="search-results" class="space-y-3">
+                <!-- Populated by JS -->
+            </div>
+
+            <div id="search-empty" class="hidden text-center py-8 px-4">
+                <div class="mx-auto w-16 h-16 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#E5E7EB" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </div>
+                <p class="font-medium">Ɛnnhuu bibi — nobody log this item near you yet.</p>
+                <p class="text-xs text-[#6B7280] mt-1">Be the first to add am for your area</p>
+                <button onclick="switchToLogPrice()" class="mt-4 px-5 py-2 bg-[#008751] text-white text-sm rounded-2xl font-medium">Log first price</button>
+            </div>
+        </div>
+
+        <!-- LOG PRICE TAB / MODAL -->
+        <div id="log-price-modal" class="hidden fixed inset-0 bg-black/60 z-[90] flex items-end md:items-center justify-center">
+            <div class="bg-white w-full md:w-[480px] md:rounded-3xl md:m-4 rounded-t-3xl p-5 max-h-[92vh] overflow-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-display text-xl font-bold">Log a Price</h3>
+                        <p class="text-xs text-[#6B7280]">Help your community stay informed</p>
+                    </div>
+                    <button onclick="closeLogPriceModal()" class="w-9 h-9 flex items-center justify-center text-[#9CA3AF] hover:text-black">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form id="log-price-form" onsubmit="submitPriceLog(event)">
+                    <!-- Item Name -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1.5">Item name</label>
+                        <input type="text" id="log-item-name" list="item-suggestions" placeholder="e.g. Tomatoes, Rice, Yam" 
+                               class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]" required>
+                        <datalist id="item-suggestions"></datalist>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Category</label>
+                        <div class="grid grid-cols-4 gap-2" id="category-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1.5">Price (GH₵)</label>
+                        <div class="flex items-center gap-x-2">
+                            <div class="flex-1 relative">
+                                <span class="absolute left-4 top-3.5 text-[#6B7280] font-bold">GH₵</span>
+                                <input type="number" step="0.01" id="log-price" placeholder="0.00" 
+                                       class="price-input w-full pl-12 pr-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick denomination buttons -->
+                        <div class="flex gap-x-2 mt-2">
+                            <button type="button" onclick="addToPrice(1)" class="flex-1 py-1.5 text-xs border border-[#E5E7EB] rounded-xl hover:bg-gray-50">+1</button>
+                            <button type="button" onclick="addToPrice(5)" class="flex-1 py-1.5 text-xs border border-[#E5E7EB] rounded-xl hover:bg-gray-50">+5</button>
+                            <button type="button" onclick="addToPrice(10)" class="flex-1 py-1.5 text-xs border border-[#E5E7EB] rounded-xl hover:bg-gray-50">+10</button>
+                            <button type="button" onclick="addToPrice(50)" class="flex-1 py-1.5 text-xs border border-[#E5E7EB] rounded-xl hover:bg-gray-50">+50</button>
+                            <button type="button" onclick="clearPriceInput()" class="px-3 py-1.5 text-xs border border-[#E5E7EB] rounded-xl hover:bg-gray-50">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1.5">Unit</label>
+                        <select id="log-unit" class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                            <option value="Per item">Per item</option>
+                            <option value="Per kg">Per kg</option>
+                            <option value="Per bag">Per bag</option>
+                            <option value="Per crate">Per crate</option>
+                            <option value="Per bunch">Per bunch</option>
+                            <option value="Per litre">Per litre</option>
+                            <option value="Per sachet">Per sachet</option>
+                            <option value="Per tin">Per tin</option>
+                        </select>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">Region</label>
+                            <select id="log-region" onchange="updateLogDistricts()" class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1.5">District</label>
+                            <select id="log-district" class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1.5">Market / Shop (optional)</label>
+                        <input type="text" id="log-market" placeholder="e.g. Kejetia Market, Madina Market" 
+                               class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                    </div>
+
+                    <!-- Date -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1.5">Date</label>
+                        <input type="date" id="log-date" class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                    </div>
+
+                    <!-- Note -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1.5">Note (optional)</label>
+                        <input type="text" id="log-note" placeholder="Bought at Kejetia, price seems high today" 
+                               class="w-full px-4 py-3 border border-[#E5E7EB] rounded-2xl focus:outline-none focus:border-[#008751]">
+                    </div>
+
+                    <!-- Anomaly Warning (hidden by default) -->
+                    <div id="anomaly-warning" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-2xl text-sm">
+                        <div class="flex gap-x-2">
+                            <i class="fa-solid fa-exclamation-triangle text-amber-500 mt-0.5"></i>
+                            <div>
+                                <p id="anomaly-text" class="text-amber-700"></p>
+                                <div class="mt-2 flex gap-x-2">
+                                    <button type="button" onclick="confirmAnomaly(true)" class="text-xs px-3 py-1 bg-white border border-amber-300 rounded-lg">Yes, this is correct</button>
+                                    <button type="button" onclick="confirmAnomaly(false)" class="text-xs px-3 py-1 text-amber-700">Let me recheck</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full py-4 bg-[#008751] hover:bg-[#006B40] transition-colors text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Submit Price</span>
+                    </button>
+                    
+                    <p class="text-center text-[10px] text-[#6B7280] mt-3">Your contribution helps thousands of Ghanaians</p>
+                </form>
+            </div>
+        </div>
+
+        <!-- CART TAB -->
+        <div id="tab-cart" class="section px-4 md:px-6 pt-4 pb-6">
+            <div class="mb-4">
+                <h2 class="font-display text-xl font-bold">Shopping Estimator</h2>
+                <p class="text-sm text-[#6B7280]">Build your list and see expected total based on community prices</p>
+            </div>
+
+            <!-- Add item to cart -->
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 mb-4">
+                <div class="flex gap-x-2">
+                    <select id="cart-add-item" class="flex-1 px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <button onclick="addToCart()" class="px-5 bg-[#008751] text-white rounded-xl font-medium text-sm">Add</button>
+                </div>
+            </div>
+
+            <!-- Cart Items -->
+            <div id="cart-items" class="space-y-3 mb-4">
+                <!-- Dynamic -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="cart-empty" class="hidden text-center py-8 bg-white border border-[#E5E7EB] rounded-2xl">
+                <div class="mx-auto w-14 h-14 mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#E5E7EB" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <p class="font-medium">Your shopping list empty</p>
+                <p class="text-xs text-[#6B7280]">Add items make we calculate wetin you go pay</p>
+            </div>
+
+            <!-- Totals -->
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 sticky bottom-20 md:bottom-4">
+                <div class="flex justify-between items-end mb-1">
+                    <span class="text-sm">Expected total</span>
+                    <span id="cart-total" class="text-2xl font-bold">GH₵0.00</span>
+                </div>
+                <div class="text-xs text-[#6B7280]" id="cart-range">Based on community prices in your area</div>
+
+                <!-- Checkout Audit Mode -->
+                <div class="mt-4 pt-4 border-t">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-x-2">
+                            <input type="checkbox" id="audit-mode" onchange="toggleAuditMode()" class="accent-[#008751]">
+                            <label for="audit-mode" class="text-sm font-medium">I'm at checkout now</label>
+                        </div>
+                    </div>
+                    
+                    <div id="audit-section" class="hidden">
+                        <div class="flex gap-x-2">
+                            <input type="number" id="actual-total" placeholder="Actual amount charged" step="0.01"
+                                   class="flex-1 px-3 py-2 border border-[#E5E7EB] rounded-xl text-sm">
+                            <button onclick="runCheckoutAudit()" class="px-4 bg-[#CE1126] text-white text-sm rounded-xl font-medium">Check</button>
+                        </div>
+                        <div id="audit-result" class="mt-3 text-sm hidden"></div>
+                    </div>
+                </div>
+
+                <button onclick="shareCartList()" class="mt-4 w-full py-2.5 border border-[#E5E7EB] rounded-2xl text-sm font-medium flex items-center justify-center gap-x-2 hover:bg-gray-50">
+                    <i class="fa-solid fa-share-alt"></i>
+                    <span>Share shopping list</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TRENDS TAB -->
+        <div id="tab-trends" class="section px-4 md:px-6 pt-4 pb-6">
+            <h2 class="font-display text-xl font-bold mb-4">Market Trends</h2>
+
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 mb-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-sm">Select item</span>
+                </div>
+                <select id="trends-item-select" onchange="updateTrendsCharts()" class="w-full px-3 py-2.5 border border-[#E5E7EB] rounded-xl text-sm">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <!-- Charts -->
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 mb-5">
+                <div class="mb-3">
+                    <span class="font-semibold text-sm">Price trend (last 90 days)</span>
+                </div>
+                <canvas id="price-trend-chart" height="120"></canvas>
+            </div>
+
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4 mb-5">
+                <div class="mb-3">
+                    <span class="font-semibold text-sm">Price by district</span>
+                </div>
+                <canvas id="district-comparison-chart" height="140"></canvas>
+            </div>
+
+            <!-- Insights -->
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl p-4">
+                <span class="font-semibold text-sm block mb-3">Community Insights</span>
+                <div id="trends-insights" class="space-y-3 text-sm">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] md:hidden z-40">
+            <div class="grid grid-cols-5 h-16">
+                <button onclick="switchTab('home')" class="nav-item flex flex-col items-center justify-center text-xs gap-y-0.5 active" data-tab="home">
+                    <i class="fa-solid fa-home text-lg"></i>
+                    <span class="text-[10px]">Home</span>
+                </button>
+                <button onclick="switchTab('search')" class="nav-item flex flex-col items-center justify-center text-xs gap-y-0.5 text-[#6B7280]" data-tab="search">
+                    <i class="fa-solid fa-search text-lg"></i>
+                    <span class="text-[10px]">Search</span>
+                </button>
+                
+                <!-- FAB style log button -->
+                <button onclick="showLogPriceModal()" class="flex flex-col items-center justify-center -mt-3">
+                    <div class="w-12 h-12 bg-[#008751] rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-plus text-white text-xl"></i>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('cart')" class="nav-item flex flex-col items-center justify-center text-xs gap-y-0.5 text-[#6B7280]" data-tab="cart">
+                    <i class="fa-solid fa-shopping-basket text-lg"></i>
+                    <span class="text-[10px]">Cart</span>
+                </button>
+                <button onclick="switchTab('trends')" class="nav-item flex flex-col items-center justify-center text-xs gap-y-0.5 text-[#6B7280]" data-tab="trends">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                    <span class="text-[10px]">Trends</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Desktop Sidebar (hidden on mobile) -->
+        <div class="hidden md:flex fixed left-0 top-16 bottom-0 w-56 border-r border-[#E5E7EB] bg-white flex-col p-3">
+            <div class="px-3 py-2">
+                <button onclick="switchTab('home')" class="w-full flex items-center gap-x-3 px-4 py-2.5 rounded-2xl text-left hover:bg-gray-100 mb-1" data-tab="home">
+                    <i class="fa-solid fa-home w-5"></i> <span>Home</span>
+                </button>
+                <button onclick="switchTab('search')" class="w-full flex items-center gap-x-3 px-4 py-2.5 rounded-2xl text-left hover:bg-gray-100 mb-1" data-tab="search">
+                    <i class="fa-solid fa-search w-5"></i> <span>Search</span>
+                </button>
+                <button onclick="showLogPriceModal()" class="w-full flex items-center gap-x-3 px-4 py-2.5 rounded-2xl text-left hover:bg-gray-100 mb-1 text-[#008751]">
+                    <i class="fa-solid fa-plus w-5"></i> <span>Log Price</span>
+                </button>
+                <button onclick="switchTab('cart')" class="w-full flex items-center gap-x-3 px-4 py-2.5 rounded-2xl text-left hover:bg-gray-100 mb-1" data-tab="cart">
+                    <i class="fa-solid fa-shopping-basket w-5"></i> <span>Cart</span>
+                </button>
+                <button onclick="switchTab('trends')" class="w-full flex items-center gap-x-3 px-4 py-2.5 rounded-2xl text-left hover:bg-gray-100" data-tab="trends">
+                    <i class="fa-solid fa-chart-line w-5"></i> <span>Trends</span>
+                </button>
+            </div>
+            
+            <div class="mt-auto p-3 text-xs text-[#6B7280]">
+                <div class="px-3">Built for Ghana 🇬🇭</div>
+                <div class="px-3 text-[10px] mt-1">v1.0 • Community powered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-4 z-[200]"></div>
+
+    <script>
+        // ==================== DATA & STATE ====================
+        let currentUser = {
+            region: "Ashanti",
+            district: "Kumasi Metropolitan",
+            nickname: "Community Member"
+        };
+
+        let prices = []; // All price entries
+        let cart = [];
+
+        const GHANA_REGIONS = {
+            "Greater Accra": ["Accra Metropolitan", "Tema Metropolitan", "Ga East Municipal", "Ga West Municipal", "Ga Central Municipal", "Ga South Municipal", "Kpone Katamanso Municipal", "Ashaiman Municipal", "Adenta Municipal", "Ledzokuku Municipal", "Krowor Municipal", "Ayawaso West Municipal", "Ayawaso East Municipal"],
+            "Ashanti": ["Kumasi Metropolitan", "Asokore Mampong Municipal", "Ejisu Municipal", "Ejisuman Municipal", "Mampong Municipal", "Offinso Municipal", "Bekwai Municipal", "Obuasi Municipal", "Tafo Municipal", "Suame Municipal", "Oforikrom Municipal", "Asante Akim Central Municipal"],
+            "Western": ["Sekondi-Takoradi Metropolitan", "Effia-Kwesimintsim Municipal", "Tarkwa-Nsuaem Municipal", "Prestea-Huni Valley Municipal", "Wassa Amenfi East Municipal", "Wassa Amenfi Central Municipal", "Wassa Amenfi West Municipal", "Shama District"],
+            "Western North": ["Sefwi Wiawso Municipal", "Bibiani-Anhwiaso-Bekwai Municipal", "Juaboso District", "Bodi District", "Bia West District", "Bia East District"],
+            "Eastern": ["Koforidua", "New Juaben South Municipal", "New Juaben North Municipal", "Abuakwa South Municipal", "Abuakwa North Municipal", "Akim Oda", "Birim Central Municipal", "Kwahu West Municipal", "Kwahu East District"],
+            "Central": ["Cape Coast Metropolitan", "Komenda-Edina-Eguafo-Abirem Municipal", "Mfantsiman Municipal", "Gomoa West District", "Gomoa East District", "Awutu Senya East Municipal", "Kasoa", "Agona West Municipal"],
+            "Volta": ["Ho Municipal", "Hohoe Municipal", "Keta Municipal", "Ketu South Municipal", "Ketu North District", "North Tongu District", "South Tongu District", "Central Tongu District"],
+            "Oti": ["Dambai", "Jasikan District", "Kadjebi District", "Nkwanta South Municipal", "Nkwanta North District"],
+            "Northern": ["Tamale Metropolitan", "Sagnarigu Municipal", "Yendi Municipal", "Gushegu Municipal", "Karaga District", "Saboba District", "Tolon District"],
+            "Savannah": ["Damongo", "Bole District", "Sawla-Tuna-Kalba District", "North Gonja District", "West Gonja District"],
+            "North East": ["Nalerigu", "Gambaga", "Bunkpurugu Nyankpanduri District", "Yunyoo-Nasuan District", "Chereponi District"],
+            "Upper East": ["Bolgatanga Municipal", "Bawku Municipal", "Navrongo", "Paga", "Bongo District", "Talensi District", "Nabdam District"],
+            "Upper West": ["Wa Municipal", "Wa West District", "Wa East District", "Nadowli-Kaleo District", "Jirapa Municipal", "Lawra Municipal"],
+            "Bono": ["Sunyani Municipal", "Sunyani West Municipal", "Dormaa Central Municipal", "Dormaa East District", "Dormaa West District", "Berekum East Municipal"],
+            "Bono East": ["Techiman Municipal", "Kintampo North Municipal", "Kintampo South District", "Nkoranza North District", "Nkoranza South Municipal"],
+            "Ahafo": ["Goaso", "Bechem", "Duayaw Nkwanta", "Tano North Municipal", "Tano South Municipal", "Asutifi North District"]
+        };
+
+        const CATEGORIES = [
+            { name: "Vegetables", icon: "fa-carrot" },
+            { name: "Grains & Staples", icon: "fa-wheat-awn" },
+            { name: "Protein", icon: "fa-drumstick-bite" },
+            { name: "Fruits", icon: "fa-apple-alt" },
+            { name: "Household", icon: "fa-home" },
+            { name: "Cooking", icon: "fa-oil-can" },
+            { name: "Health", icon: "fa-pills" },
+            { name: "Other", icon: "fa-box" }
+        ];
+
+        const COMMON_ITEMS = [
+            "Tomatoes", "Rice", "Cooking oil", "Yam", "Plantain", "Onions", 
+            "Chicken", "Tilapia", "Maize", "Sugar", "Flour", "Eggs", 
+            "Evaporated milk", "Bottled water", "Cassava", "Groundnut", "Beans", "Pepper"
+        ];
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            let bgColor = type === "success" ? "bg-[#008751]" : type === "error" ? "bg-[#CE1126]" : "bg-[#1A1A2E]";
+            
+            toast.className = `toast max-w-xs px-4 py-3 rounded-2xl text-white text-sm flex items-center gap-x-2 shadow-xl ${bgColor}`;
+            toast.innerHTML = `
+                <div class="flex-1">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = "all 0.3s ease";
+                toast.style.opacity = "0";
+                setTimeout(() => toast.remove(), 200);
+            }, 2800);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-GH', { 
+                style: 'currency', 
+                currency: 'GHS',
+                minimumFractionDigits: 2 
+            }).format(amount).replace('GHS', 'GH₵');
+        }
+
+        function getCurrentLocationText() {
+            return `${currentUser.district}, ${currentUser.region}`;
+        }
+
+        function updateHeaderLocation() {
+            const el = document.getElementById("header-location");
+            if (el) el.textContent = `${currentUser.district.split(" ")[0]}, ${currentUser.region}`;
+            
+            const homeText = document.getElementById("home-location-text");
+            if (homeText) homeText.textContent = getCurrentLocationText();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem("pricecheck_prices", JSON.stringify(prices));
+            localStorage.setItem("pricecheck_user", JSON.stringify(currentUser));
+            localStorage.setItem("pricecheck_cart", JSON.stringify(cart));
+        }
+
+        function loadFromLocalStorage() {
+            const savedPrices = localStorage.getItem("pricecheck_prices");
+            if (savedPrices) prices = JSON.parse(savedPrices);
+            
+            const savedUser = localStorage.getItem("pricecheck_user");
+            if (savedUser) currentUser = JSON.parse(savedUser);
+            
+            const savedCart = localStorage.getItem("pricecheck_cart");
+            if (savedCart) cart = JSON.parse(savedCart);
+        }
+
+        // ==================== ONBOARDING ====================
+        function updateOnboardingDistricts() {
+            const regionSelect = document.getElementById("onboarding-region");
+            const districtSelect = document.getElementById("onboarding-district");
+            districtSelect.innerHTML = "";
+            
+            const region = regionSelect.value;
+            if (GHANA_REGIONS[region]) {
+                GHANA_REGIONS[region].forEach(district => {
+                    const opt = document.createElement("option");
+                    opt.value = district;
+                    opt.textContent = district;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function nextOnboardingSlide(slide) {
+            document.querySelectorAll(".onboarding-slide").forEach(s => s.classList.add("hidden"));
+            document.getElementById(`onboarding-slide-${slide}`).classList.remove("hidden");
+        }
+
+        function prevOnboardingSlide(slide) {
+            document.querySelectorAll(".onboarding-slide").forEach(s => s.classList.add("hidden"));
+            document.getElementById(`onboarding-slide-${slide}`).classList.remove("hidden");
+        }
+
+        function completeOnboarding() {
+            const region = document.getElementById("onboarding-region").value;
+            const district = document.getElementById("onboarding-district").value;
+            const nickname = document.getElementById("onboarding-nickname").value.trim() || "Community Member";
+
+            currentUser = { region, district, nickname };
+            
+            document.getElementById("onboarding").classList.add("hidden");
+            document.getElementById("app").classList.remove("hidden");
+            
+            updateHeaderLocation();
+            initializeApp();
+            showToast(`Welcome, ${nickname.split(" ")[0]}!`, "success");
+            
+            // Save user
+            localStorage.setItem("pricecheck_user", JSON.stringify(currentUser));
+            localStorage.setItem("pricecheck_onboarded", "true");
+        }
+
+        function skipOnboarding() {
+            document.getElementById("onboarding").classList.add("hidden");
+            document.getElementById("app").classList.remove("hidden");
+            initializeApp();
+        }
+
+        function initializeOnboarding() {
+            const regionSelect = document.getElementById("onboarding-region");
+            regionSelect.innerHTML = "";
+            
+            Object.keys(GHANA_REGIONS).forEach(region => {
+                const opt = document.createElement("option");
+                opt.value = region;
+                opt.textContent = region;
+                regionSelect.appendChild(opt);
+            });
+            
+            // Default to Ashanti
+            regionSelect.value = "Ashanti";
+            updateOnboardingDistricts();
+            
+            // Pre-select Kumasi
+            setTimeout(() => {
+                const districtSelect = document.getElementById("onboarding-district");
+                if (districtSelect) districtSelect.value = "Kumasi Metropolitan";
+            }, 100);
+        }
+
+        // ==================== PRICE DATA & AGGREGATION ====================
+        function seedInitialData() {
+            // App launches completely empty. 
+            // The community builds the data. Empty states inspire contribution.
+            return;
+        }
+
+        function getAggregatedPrices(region = null, district = null) {
+            let filtered = prices;
+            
+            if (region) filtered = filtered.filter(p => p.region === region);
+            if (district) filtered = filtered.filter(p => p.district === district);
+
+            const grouped = {};
+            
+            filtered.forEach(entry => {
+                const key = `${entry.item}-${entry.unit}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        item: entry.item,
+                        category: entry.category,
+                        unit: entry.unit,
+                        prices: [],
+                        contributors: new Set(),
+                        lastUpdated: entry.timestamp || entry.date
+                    };
+                }
+                grouped[key].prices.push(entry.price);
+                grouped[key].contributors.add(entry.contributor || "Anonymous");
+                
+                if (new Date(entry.timestamp || entry.date) > new Date(grouped[key].lastUpdated)) {
+                    grouped[key].lastUpdated = entry.timestamp || entry.date;
+                }
+            });
+
+            return Object.values(grouped).map(group => {
+                const sortedPrices = [...group.prices].sort((a, b) => a - b);
+                const avg = sortedPrices.reduce((a, b) => a + b, 0) / sortedPrices.length;
+                const min = sortedPrices[0];
+                const max = sortedPrices[sortedPrices.length - 1];
+                
+                // Simple trend calculation
+                let trend = "stable";
+                let trendValue = 0;
+                if (group.prices.length >= 2) {
+                    const recent = group.prices.slice(-3);
+                    const older = group.prices.slice(0, -3);
+                    if (older.length > 0) {
+                        const recentAvg = recent.reduce((a,b)=>a+b,0) / recent.length;
+                        const olderAvg = older.reduce((a,b)=>a+b,0) / older.length;
+                        trendValue = ((recentAvg - olderAvg) / olderAvg) * 100;
+                        if (trendValue > 8) trend = "rising";
+                        else if (trendValue < -8) trend = "falling";
+                    }
+                }
+
+                return {
+                    ...group,
+                    avgPrice: parseFloat(avg.toFixed(2)),
+                    minPrice: min,
+                    maxPrice: max,
+                    contributorCount: group.contributors.size,
+                    trend,
+                    trendValue: parseFloat(trendValue.toFixed(1))
+                };
+            }).sort((a, b) => b.contributorCount - a.contributorCount);
+        }
+
+        function calculateCommunityStats() {
+            const total = prices.length;
+            const uniqueContributors = new Set(prices.map(p => p.contributor || "Anonymous")).size;
+            
+            const uniqueDistricts = new Set(prices.map(p => p.district)).size;
+            
+            return { total, uniqueContributors, uniqueDistricts };
+        }
+
+        // ==================== HOME TAB ====================
+        let currentHomeCategoryFilter = "all";
+
+        function filterHomeByCategory(category) {
+            currentHomeCategoryFilter = category;
+            
+            // Update active chip
+            document.querySelectorAll(".category-chip").forEach(chip => {
+                chip.classList.remove("active", "bg-[#008751]", "text-white");
+                chip.classList.add("bg-white");
+                
+                if (category === "all" && chip.dataset.category === "all") {
+                    chip.classList.add("active", "bg-[#008751]", "text-white");
+                    chip.classList.remove("bg-white");
+                } else if (chip.dataset.category === category) {
+                    chip.classList.add("active", "bg-[#008751]", "text-white");
+                    chip.classList.remove("bg-white");
+                }
+            });
+            
+            renderHomePriceBoard();
+        }
+
+        function renderHomePriceBoard() {
+            const container = document.getElementById("home-price-board");
+            container.innerHTML = "";
+            
+            const aggregated = getAggregatedPrices(currentUser.region, currentUser.district);
+            
+            let filtered = aggregated;
+            if (currentHomeCategoryFilter !== "all") {
+                filtered = aggregated.filter(item => item.category === currentHomeCategoryFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border border-[#E5E7EB] rounded-3xl p-8 text-center">
+                        <div class="mx-auto w-20 h-20 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#008751" stroke-width="1.25">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 4.01V8" />
+                            </svg>
+                        </div>
+                        <p class="font-semibold text-lg">Be the first to log prices for your area</p>
+                        <p class="text-sm text-[#6B7280] mt-1">Your community needs this data. Start small, help plenty.</p>
+                        <button onclick="showLogPriceModal()" 
+                                class="mt-5 px-6 py-2.5 bg-[#008751] text-white text-sm rounded-2xl font-medium">
+                            Log first price
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.slice(0, 12).forEach(item => {
+                const card = document.createElement("div");
+                card.className = `price-card bg-white border border-[#E5E7EB] rounded-2xl p-4`;
+                
+                let trendHTML = "";
+                if (item.trend === "rising") {
+                    trendHTML = `<span class="price-trend-up flex items-center text-xs"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Rising</span>`;
+                } else if (item.trend === "falling") {
+                    trendHTML = `<span class="price-trend-down flex items-center text-xs"><i class="fa-solid fa-arrow-trend-down mr-1"></i> Falling</span>`;
+                } else {
+                    trendHTML = `<span class="price-trend-stable flex items-center text-xs"><i class="fa-solid fa-minus mr-1"></i> Stable</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-x-2">
+                                <span class="font-semibold text-lg">${item.item}</span>
+                            </div>
+                            <div class="text-xs text-[#6B7280]">${item.category} • ${item.unit}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-[#008751] price-value">${formatCurrency(item.avgPrice)}</div>
+                            <div class="text-[10px] text-[#6B7280]">avg / ${item.unit.toLowerCase()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex items-center justify-between text-xs">
+                        <div>
+                            <span class="text-[#6B7280]">Range:</span> 
+                            <span class="font-medium">${formatCurrency(item.minPrice)} – ${formatCurrency(item.maxPrice)}</span>
+                        </div>
+                        <div class="flex items-center gap-x-1">
+                            ${trendHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 pt-3 border-t flex items-center justify-between">
+                        <div class="text-xs text-[#6B7280]">
+                            <i class="fa-solid fa-users mr-1"></i> ${item.contributorCount} contributors
+                        </div>
+                        
+                        <button onclick="quickLogPrice('${item.item}', '${item.category}', '${item.unit}')" 
+                                class="text-xs px-3 py-1 bg-[#F0FDF4] text-[#008751] rounded-xl font-medium hover:bg-[#DCFCE7]">
+                            Log this price
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function refreshHomeFeed() {
+            renderHomePriceBoard();
+            updateCommunityStats();
+            showToast("Feed refreshed");
+        }
+
+        function updateCommunityStats() {
+            const stats = calculateCommunityStats();
+            document.getElementById("stat-total-entries").textContent = stats.total.toLocaleString();
+            document.getElementById("stat-active-contributors").textContent = stats.uniqueContributors;
+            document.getElementById("stat-districts-covered").textContent = stats.uniqueDistricts;
+        }
+
+        function quickLogPrice(item, category, unit) {
+            showLogPriceModal();
+            
+            // Pre-fill form
+            setTimeout(() => {
+                document.getElementById("log-item-name").value = item;
+                
+                // Select category
+                document.querySelectorAll("#category-grid button").forEach(btn => {
+                    if (btn.dataset.category === category) {
+                        btn.click();
+                    }
+                });
+                
+                document.getElementById("log-unit").value = unit;
+            }, 300);
+        }
+
+        // ==================== LOG PRICE ====================
+        let selectedCategory = null;
+        let anomalyConfirmed = false;
+
+        function populateCategoryGrid() {
+            const container = document.getElementById("category-grid");
+            container.innerHTML = "";
+            
+            CATEGORIES.forEach(cat => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = `category-chip flex flex-col items-center justify-center p-2 border border-[#E5E7EB] rounded-2xl text-xs hover:border-[#008751]`;
+                btn.innerHTML = `
+                    <i class="fa-solid ${cat.icon} text-lg mb-1 text-[#6B7280]"></i>
+                    <span class="text-[10px]">${cat.name}</span>
+                `;
+                btn.dataset.category = cat.name;
+                
+                btn.onclick = () => {
+                    document.querySelectorAll("#category-grid button").forEach(b => b.classList.remove("active", "border-[#008751]", "bg-[#F0FDF4]"));
+                    btn.classList.add("active", "border-[#008751]", "bg-[#F0FDF4]");
+                    selectedCategory = cat.name;
+                };
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function populateItemSuggestions() {
+            const datalist = document.getElementById("item-suggestions");
+            datalist.innerHTML = "";
+            
+            COMMON_ITEMS.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                datalist.appendChild(option);
+            });
+            
+            // Also add items that have been logged before
+            const loggedItems = [...new Set(prices.map(p => p.item))];
+            loggedItems.forEach(item => {
+                if (!COMMON_ITEMS.includes(item)) {
+                    const option = document.createElement("option");
+                    option.value = item;
+                    datalist.appendChild(option);
+                }
+            });
+        }
+
+        function populateRegionDropdowns() {
+            // Log form region
+            const logRegion = document.getElementById("log-region");
+            logRegion.innerHTML = "";
+            
+            Object.keys(GHANA_REGIONS).forEach(region => {
+                const opt = document.createElement("option");
+                opt.value = region;
+                opt.textContent = region;
+                logRegion.appendChild(opt);
+            });
+            
+            // Set current user region as default
+            logRegion.value = currentUser.region;
+            
+            // Update districts
+            updateLogDistricts();
+            
+            // Also populate search region
+            const searchRegion = document.getElementById("search-region");
+            searchRegion.innerHTML = `<option value="">All Regions</option>`;
+            Object.keys(GHANA_REGIONS).forEach(region => {
+                const opt = document.createElement("option");
+                opt.value = region;
+                opt.textContent = region;
+                searchRegion.appendChild(opt);
+            });
+        }
+
+        function updateLogDistricts() {
+            const region = document.getElementById("log-region").value;
+            const districtSelect = document.getElementById("log-district");
+            districtSelect.innerHTML = "";
+            
+            if (GHANA_REGIONS[region]) {
+                GHANA_REGIONS[region].forEach(d => {
+                    const opt = document.createElement("option");
+                    opt.value = d;
+                    opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+            }
+            
+            // Try to select current user's district if same region
+            if (region === currentUser.region) {
+                districtSelect.value = currentUser.district;
+            }
+        }
+
+        function updateSearchDistricts() {
+            const region = document.getElementById("search-region").value;
+            const districtSelect = document.getElementById("search-district");
+            districtSelect.innerHTML = `<option value="">All Districts</option>`;
+            
+            if (region && GHANA_REGIONS[region]) {
+                GHANA_REGIONS[region].forEach(d => {
+                    const opt = document.createElement("option");
+                    opt.value = d;
+                    opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function addToPrice(amount) {
+            const input = document.getElementById("log-price");
+            let current = parseFloat(input.value) || 0;
+            input.value = (current + amount).toFixed(2);
+        }
+
+        function clearPriceInput() {
+            document.getElementById("log-price").value = "";
+        }
+
+        function showLogPriceModal() {
+            const modal = document.getElementById("log-price-modal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            
+            // Reset form
+            document.getElementById("log-price-form").reset();
+            document.getElementById("anomaly-warning").classList.add("hidden");
+            anomalyConfirmed = false;
+            selectedCategory = null;
+            
+            // Set today's date
+            const dateInput = document.getElementById("log-date");
+            const today = new Date().toISOString().split("T")[0];
+            dateInput.value = today;
+            dateInput.max = today;
+            
+            // Pre-select current location
+            setTimeout(() => {
+                const regionSelect = document.getElementById("log-region");
+                if (regionSelect) regionSelect.value = currentUser.region;
+                updateLogDistricts();
+                
+                const districtSelect = document.getElementById("log-district");
+                if (districtSelect) districtSelect.value = currentUser.district;
+            }, 100);
+            
+            // Populate if not already
+            populateCategoryGrid();
+            populateItemSuggestions();
+        }
+
+        function closeLogPriceModal() {
+            const modal = document.getElementById("log-price-modal");
+            modal.classList.remove("flex");
+            modal.classList.add("hidden");
+        }
+
+        function checkForAnomaly(price, item, region, district) {
+            const relevantPrices = prices.filter(p => 
+                p.item.toLowerCase() === item.toLowerCase() && 
+                p.region === region && 
+                p.district === district
+            );
+            
+            if (relevantPrices.length < 2) return null;
+            
+            const avg = relevantPrices.reduce((sum, p) => sum + p.price, 0) / relevantPrices.length;
+            const deviation = Math.abs(price - avg) / avg * 100;
+            
+            if (deviation > 30) {
+                return {
+                    avg: avg.toFixed(2),
+                    deviation: deviation.toFixed(0),
+                    isHigh: price > avg
+                };
+            }
+            return null;
+        }
+
+        function confirmAnomaly(confirm) {
+            anomalyConfirmed = confirm;
+            const warning = document.getElementById("anomaly-warning");
+            
+            if (confirm) {
+                warning.classList.add("hidden");
+                showToast("Medaase. We dey submit am...");
+                // Continue with form submission
+                document.getElementById("log-price-form").dispatchEvent(new Event("submit"));
+            } else {
+                warning.classList.add("hidden");
+                document.getElementById("log-price").focus();
+            }
+        }
+
+        function submitPriceLog(e) {
+            e.preventDefault();
+            
+            const item = document.getElementById("log-item-name").value.trim();
+            const price = parseFloat(document.getElementById("log-price").value);
+            const unit = document.getElementById("log-unit").value;
+            const region = document.getElementById("log-region").value;
+            const district = document.getElementById("log-district").value;
+            const market = document.getElementById("log-market").value.trim();
+            const date = document.getElementById("log-date").value;
+            const note = document.getElementById("log-note").value.trim();
+            
+            if (!item || !price || !region || !district) {
+                showToast("Please fill in all required fields", "error");
+                return;
+            }
+            
+            if (!selectedCategory) {
+                showToast("Please select a category", "error");
+                return;
+            }
+            
+            // Anomaly check
+            const anomaly = checkForAnomaly(price, item, region, district);
+            if (anomaly && !anomalyConfirmed) {
+                const warning = document.getElementById("anomaly-warning");
+                const text = document.getElementById("anomaly-text");
+                
+                text.innerHTML = `Ei! This price pass normal by <strong>${anomaly.deviation}%</strong>. Community average for ${item} dey <strong>GH₵${anomaly.avg}</strong>. You sure?`;
+                warning.classList.remove("hidden");
+                return; // Stop and wait for confirmation
+            }
+            
+            // Create new price entry
+            const newEntry = {
+                id: "price-" + Date.now(),
+                item: item,
+                category: selectedCategory,
+                price: price,
+                unit: unit,
+                region: region,
+                district: district,
+                market: market || "Local market",
+                date: date,
+                note: note,
+                contributor: currentUser.nickname,
+                timestamp: new Date().toISOString()
+            };
+            
+            prices.unshift(newEntry);
+            saveToLocalStorage();
+            
+            // Close modal
+            closeLogPriceModal();
+            
+            // Success feedback
+            showConfetti();
+            
+            const isFirst = prices.length === 1;
+            if (isFirst) {
+                showToast("Ayekoo! You be the first to log price for your area", "success");
+            } else {
+                showToast("Medaase! Wo de mmoa ama wo community", "success");
+            }
+            
+            // Update UI
+            setTimeout(() => {
+                renderHomePriceBoard();
+                updateCommunityStats();
+                updateTrendsItemSelect();
+                
+                // If user is on search, refresh it
+                if (document.getElementById("tab-search").classList.contains("active")) {
+                    performSearch();
+                }
+            }, 600);
+            
+            // Reset anomaly flag
+            anomalyConfirmed = false;
+        }
+
+        function showConfetti() {
+            const colors = ["#008751", "#FCD116", "#CE1126"];
+            const container = document.body;
+            
+            for (let i = 0; i < 60; i++) {
+                const particle = document.createElement("div");
+                particle.style.position = "fixed";
+                particle.style.left = Math.random() * 100 + "vw";
+                particle.style.top = "-10px";
+                particle.style.width = "8px";
+                particle.style.height = "8px";
+                particle.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.zIndex = "9999";
+                particle.style.pointerEvents = "none";
+                container.appendChild(particle);
+                
+                const duration = Math.random() * 2500 + 1800;
+                const angle = Math.random() * 80 + 30;
+                
+                particle.animate([
+                    { 
+                        transform: `translateY(0) rotate(0deg)`, 
+                        opacity: 1 
+                    },
+                    { 
+                        transform: `translateY(${window.innerHeight + 100}px) rotate(${angle * 3}deg)`, 
+                        opacity: 0 
+                    }
+                ], {
+                    duration: duration,
+                    easing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+                }).onfinish = () => particle.remove();
+            }
+        }
+
+        // ==================== SEARCH TAB ====================
+        function performSearch() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            const regionFilter = document.getElementById("search-region").value;
+            const districtFilter = document.getElementById("search-district").value;
+            
+            const container = document.getElementById("search-results");
+            const emptyState = document.getElementById("search-empty");
+            container.innerHTML = "";
+            
+            let results = prices;
+            
+            if (query) {
+                results = results.filter(p => p.item.toLowerCase().includes(query));
+            }
+            if (regionFilter) {
+                results = results.filter(p => p.region === regionFilter);
+            }
+            if (districtFilter) {
+                results = results.filter(p => p.district === districtFilter);
+            }
+            
+            if (results.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            } else {
+                emptyState.classList.add("hidden");
+            }
+            
+            // Group by item for nicer display
+            const grouped = {};
+            results.forEach(entry => {
+                if (!grouped[entry.item]) grouped[entry.item] = [];
+                grouped[entry.item].push(entry);
+            });
+            
+            Object.keys(grouped).forEach(itemName => {
+                const entries = grouped[itemName];
+                const avg = entries.reduce((sum, e) => sum + e.price, 0) / entries.length;
+                
+                const card = document.createElement("div");
+                card.className = "bg-white border border-[#E5E7EB] rounded-2xl p-4";
+                
+                let html = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-semibold text-lg">${itemName}</span>
+                            <span class="ml-2 text-xs px-2 py-0.5 bg-gray-100 rounded-full">${entries[0].category}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-[#008751]">${formatCurrency(avg)}</div>
+                            <div class="text-[10px] text-[#6B7280]">avg</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Show up to 3 recent entries
+                entries.slice(0, 3).forEach(entry => {
+                    html += `
+                        <div class="flex justify-between text-xs py-1.5 border-t">
+                            <div class="text-[#6B7280]">
+                                ${entry.district} • ${entry.market}
+                            </div>
+                            <div class="font-medium">${formatCurrency(entry.price)} <span class="text-[#6B7280]">/ ${entry.unit}</span></div>
+                        </div>
+                    `;
+                });
+                
+                if (entries.length > 3) {
+                    html += `<div class="text-xs text-center text-[#6B7280] pt-1">+${entries.length - 3} more reports</div>`;
+                }
+                
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // ==================== CART TAB ====================
+        function populateCartItemSelect() {
+            const select = document.getElementById("cart-add-item");
+            select.innerHTML = `<option value="">Select an item...</option>`;
+            
+            const uniqueItems = [...new Set(prices.map(p => p.item))];
+            
+            uniqueItems.forEach(item => {
+                const opt = document.createElement("option");
+                opt.value = item;
+                opt.textContent = item;
+                select.appendChild(opt);
+            });
+        }
+
+        function addToCart() {
+            const select = document.getElementById("cart-add-item");
+            const itemName = select.value;
+            if (!itemName) return;
+            
+            // Find average price for this item in current location
+            const relevant = prices.filter(p => p.item === itemName && p.region === currentUser.region);
+            let avgPrice = 0;
+            let unit = "Per item";
+            
+            if (relevant.length > 0) {
+                avgPrice = relevant.reduce((sum, p) => sum + p.price, 0) / relevant.length;
+                unit = relevant[0].unit;
+            } else {
+                // fallback average from all
+                const allRelevant = prices.filter(p => p.item === itemName);
+                if (allRelevant.length > 0) {
+                    avgPrice = allRelevant.reduce((sum, p) => sum + p.price, 0) / allRelevant.length;
+                    unit = allRelevant[0].unit;
+                }
+            }
+            
+            cart.push({
+                id: Date.now(),
+                item: itemName,
+                quantity: 1,
+                unit: unit,
+                communityPrice: parseFloat(avgPrice.toFixed(2))
+            });
+            
+            saveToLocalStorage();
+            renderCart();
+            select.value = "";
+            showToast(`${itemName} added to list`);
+        }
+
+        function renderCart() {
+            const container = document.getElementById("cart-items");
+            const empty = document.getElementById("cart-empty");
+            container.innerHTML = "";
+            
+            if (cart.length === 0) {
+                empty.classList.remove("hidden");
+                document.getElementById("cart-total").textContent = "GH₵0.00";
+                return;
+            }
+            
+            empty.classList.add("hidden");
+            
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const subtotal = item.communityPrice * item.quantity;
+                total += subtotal;
+                
+                const div = document.createElement("div");
+                div.className = "bg-white border border-[#E5E7EB] rounded-2xl p-4 flex items-center gap-x-3";
+                div.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold">${item.item}</div>
+                        <div class="text-xs text-[#6B7280]">${item.unit} • Community avg: ${formatCurrency(item.communityPrice)}</div>
+                    </div>
+                    
+                    <div class="flex items-center gap-x-2">
+                        <div class="flex items-center border border-[#E5E7EB] rounded-xl">
+                            <button onclick="changeCartQuantity(${index}, -1)" class="w-8 h-8 flex items-center justify-center text-lg leading-none">−</button>
+                            <span class="px-3 font-mono text-sm">${item.quantity}</span>
+                            <button onclick="changeCartQuantity(${index}, 1)" class="w-8 h-8 flex items-center justify-center text-lg leading-none">+</button>
+                        </div>
+                        
+                        <div class="text-right w-20">
+                            <div class="font-semibold">${formatCurrency(subtotal)}</div>
+                        </div>
+                        
+                        <button onclick="removeFromCart(${index})" class="text-red-400 hover:text-red-500 w-8">
+                            <i class="fa-solid fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            document.getElementById("cart-total").textContent = formatCurrency(total);
+            
+            // Update expected range (simple ±15%)
+            const rangeLow = total * 0.85;
+            const rangeHigh = total * 1.15;
+            document.getElementById("cart-range").innerHTML = `Expect to pay between <strong>${formatCurrency(rangeLow)}</strong> – <strong>${formatCurrency(rangeHigh)}</strong>`;
+        }
+
+        function changeCartQuantity(index, delta) {
+            cart[index].quantity = Math.max(1, cart[index].quantity + delta);
+            saveToLocalStorage();
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            saveToLocalStorage();
+            renderCart();
+        }
+
+        function toggleAuditMode() {
+            const section = document.getElementById("audit-section");
+            section.classList.toggle("hidden", !document.getElementById("audit-mode").checked);
+        }
+
+        function runCheckoutAudit() {
+            const actual = parseFloat(document.getElementById("actual-total").value);
+            if (!actual || cart.length === 0) {
+                showToast("Please enter actual total and have items in cart", "error");
+                return;
+            }
+            
+            let expected = 0;
+            cart.forEach(item => {
+                expected += item.communityPrice * item.quantity;
+            });
+            
+            const diff = actual - expected;
+            const resultEl = document.getElementById("audit-result");
+            resultEl.classList.remove("hidden");
+            
+            if (diff > 50) {
+                resultEl.innerHTML = `
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-2xl text-sm">
+                        <strong>You were charged ${formatCurrency(actual)}</strong><br>
+                        Expected total was <strong>${formatCurrency(expected)}</strong><br>
+                        <span class="text-red-600 font-semibold">Difference: ${formatCurrency(diff)} — possible overcharge ⚠️</span>
+                        <button onclick="logDiscrepancy(${diff}, ${expected}, ${actual})" class="mt-2 block text-xs underline">Log this discrepancy</button>
+                    </div>
+                `;
+            } else if (diff < -20) {
+                resultEl.innerHTML = `
+                    <div class="p-3 bg-green-50 border border-green-200 rounded-2xl text-sm">
+                        You were charged less than expected. Great deal!
+                    </div>
+                `;
+            } else {
+                resultEl.innerHTML = `
+                    <div class="p-3 bg-gray-100 border border-gray-200 rounded-2xl text-sm">
+                        Your total looks fair compared to community prices.
+                    </div>
+                `;
+            }
+        }
+
+        function logDiscrepancy(diff, expected, actual) {
+            const note = `Checkout audit: Charged GH₵${actual} vs expected GH₵${expected.toFixed(2)}`;
+            
+            // Create a special log entry
+            const auditEntry = {
+                id: "audit-" + Date.now(),
+                item: "Checkout Discrepancy",
+                category: "Other",
+                price: diff,
+                unit: "Total",
+                region: currentUser.region,
+                district: currentUser.district,
+                market: "Checkout",
+                date: new Date().toISOString().split("T")[0],
+                note: note,
+                contributor: currentUser.nickname,
+                timestamp: new Date().toISOString()
+            };
+            
+            prices.unshift(auditEntry);
+            saveToLocalStorage();
+            
+            showToast("Discrepancy logged. Thank you for reporting.");
+            document.getElementById("audit-result").innerHTML = `<div class="text-green-600 text-sm p-2">Thank you. This helps protect the community.</div>`;
+        }
+
+        function shareCartList() {
+            if (cart.length === 0) {
+                showToast("Add items to your list first");
+                return;
+            }
+            
+            let text = "🛒 My PriceCheck GH Shopping List\n\n";
+            let total = 0;
+            
+            cart.forEach(item => {
+                const subtotal = item.communityPrice * item.quantity;
+                total += subtotal;
+                text += `• ${item.item} ×${item.quantity} — ${formatCurrency(subtotal)}\n`;
+            });
+            
+            text += `\nExpected Total: ${formatCurrency(total)}\n`;
+            text += `Location: ${getCurrentLocationText()}\n`;
+            text += `Generated by PriceCheck GH`;
+            
+            if (navigator.share) {
+                navigator.share({ title: "My Shopping List", text: text });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("Shopping list copied to clipboard!");
+                });
+            }
+        }
+
+        // ==================== TRENDS TAB ====================
+        let trendChartInstance = null;
+        let districtChartInstance = null;
+
+        function updateTrendsItemSelect() {
+            const select = document.getElementById("trends-item-select");
+            select.innerHTML = "";
+            
+            const uniqueItems = [...new Set(prices.map(p => p.item))].sort();
+            
+            uniqueItems.forEach(item => {
+                const opt = document.createElement("option");
+                opt.value = item;
+                opt.textContent = item;
+                select.appendChild(opt);
+            });
+            
+            if (uniqueItems.length > 0) {
+                select.value = uniqueItems[0];
+                setTimeout(updateTrendsCharts, 100);
+            }
+        }
+
+        function updateTrendsCharts() {
+            const selectedItem = document.getElementById("trends-item-select").value;
+            if (!selectedItem) return;
+            
+            // Filter data for this item
+            const itemPrices = prices.filter(p => p.item === selectedItem);
+            
+            // === Line Chart: Price over time ===
+            const ctxLine = document.getElementById("price-trend-chart");
+            
+            if (trendChartInstance) trendChartInstance.destroy();
+            
+            // Group by week (simple)
+            const weeklyData = {};
+            itemPrices.forEach(p => {
+                const d = new Date(p.date || p.timestamp);
+                const weekKey = `${d.getFullYear()}-W${Math.ceil((d.getDate() + 6) / 7)}`;
+                if (!weeklyData[weekKey]) weeklyData[weekKey] = [];
+                weeklyData[weekKey].push(p.price);
+            });
+            
+            const sortedWeeks = Object.keys(weeklyData).sort();
+            const avgPrices = sortedWeeks.map(w => {
+                const arr = weeklyData[w];
+                return arr.reduce((a,b)=>a+b,0) / arr.length;
+            });
+            
+            trendChartInstance = new Chart(ctxLine, {
+                type: "line",
+                data: {
+                    labels: sortedWeeks.length ? sortedWeeks : ["No data"],
+                    datasets: [{
+                        label: "Average Price (GH₵)",
+                        data: avgPrices.length ? avgPrices : [0],
+                        borderColor: "#008751",
+                        backgroundColor: "rgba(0, 135, 81, 0.1)",
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            
+            // === Bar Chart: By District ===
+            const ctxBar = document.getElementById("district-comparison-chart");
+            if (districtChartInstance) districtChartInstance.destroy();
+            
+            const districtAverages = {};
+            itemPrices.forEach(p => {
+                if (!districtAverages[p.district]) districtAverages[p.district] = [];
+                districtAverages[p.district].push(p.price);
+            });
+            
+            const districtLabels = Object.keys(districtAverages);
+            const districtAvgs = districtLabels.map(d => {
+                const arr = districtAverages[d];
+                return arr.reduce((a,b)=>a+b,0) / arr.length;
+            });
+            
+            districtChartInstance = new Chart(ctxBar, {
+                type: "bar",
+                data: {
+                    labels: districtLabels.length ? districtLabels : ["No data"],
+                    datasets: [{
+                        label: "Avg Price",
+                        data: districtAvgs.length ? districtAvgs : [0],
+                        backgroundColor: "#FCD116",
+                        borderColor: "#008751",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            
+            // Update insights
+            renderTrendsInsights(selectedItem, itemPrices);
+        }
+
+        function renderTrendsInsights(item, itemPrices) {
+            const container = document.getElementById("trends-insights");
+            container.innerHTML = "";
+            
+            if (itemPrices.length === 0) {
+                container.innerHTML = `<p class="text-sm text-[#6B7280]">Not enough data for insights yet.</p>`;
+                return;
+            }
+            
+            const avg = itemPrices.reduce((sum, p) => sum + p.price, 0) / itemPrices.length;
+            const sorted = [...itemPrices].sort((a,b) => a.price - b.price);
+            const cheapest = sorted[0];
+            
+            let html = `
+                <div class="flex justify-between text-sm">
+                    <span class="text-[#6B7280]">Average price</span>
+                    <span class="font-semibold">${formatCurrency(avg)}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-[#6B7280]">Cheapest district</span>
+                    <span class="font-semibold">${cheapest.district} (${formatCurrency(cheapest.price)})</span>
+                </div>
+            `;
+            
+            // Simple insight
+            if (itemPrices.length > 5) {
+                html += `<div class="pt-2 text-xs text-emerald-600">This item has good community coverage. Data is reliable.</div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== LOCATION MODAL ====================
+        function showLocationModal() {
+            const modalHTML = `
+                <div id="location-modal" class="fixed inset-0 bg-black/60 z-[95] flex items-end md:items-center justify-center" onclick="closeLocationModal()">
+                    <div onclick="event.stopImmediatePropagation()" class="bg-white w-full md:w-[420px] md:rounded-3xl rounded-t-3xl p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold text-lg">Change your location</h3>
+                            <button onclick="closeLocationModal()" class="text-2xl leading-none text-[#9CA3AF]">&times;</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-medium">Region</label>
+                                <select id="modal-region" onchange="updateModalDistricts()" class="w-full mt-1 px-4 py-3 border border-[#E5E7EB] rounded-2xl">
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm font-medium">District</label>
+                                <select id="modal-district" class="w-full mt-1 px-4 py-3 border border-[#E5E7EB] rounded-2xl">
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex gap-x-3">
+                            <button onclick="closeLocationModal()" class="flex-1 py-3 border border-[#E5E7EB] rounded-2xl font-medium">Cancel</button>
+                            <button onclick="saveNewLocation()" class="flex-1 py-3 bg-[#008751] text-white rounded-2xl font-medium">Update Location</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML("beforeend", modalHTML);
+            
+            // Populate regions
+            const regionSelect = document.getElementById("modal-region");
+            Object.keys(GHANA_REGIONS).forEach(r => {
+                const opt = document.createElement("option");
+                opt.value = r;
+                opt.textContent = r;
+                regionSelect.appendChild(opt);
+            });
+            regionSelect.value = currentUser.region;
+            
+            updateModalDistricts();
+            
+            // Preselect current district
+            setTimeout(() => {
+                const dSelect = document.getElementById("modal-district");
+                if (dSelect) dSelect.value = currentUser.district;
+            }, 50);
+        }
+
+        function updateModalDistricts() {
+            const region = document.getElementById("modal-region").value;
+            const districtSelect = document.getElementById("modal-district");
+            districtSelect.innerHTML = "";
+            
+            if (GHANA_REGIONS[region]) {
+                GHANA_REGIONS[region].forEach(d => {
+                    const opt = document.createElement("option");
+                    opt.value = d;
+                    opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function saveNewLocation() {
+            const region = document.getElementById("modal-region").value;
+            const district = document.getElementById("modal-district").value;
+            
+            currentUser.region = region;
+            currentUser.district = district;
+            
+            localStorage.setItem("pricecheck_user", JSON.stringify(currentUser));
+            
+            updateHeaderLocation();
+            renderHomePriceBoard();
+            updateCommunityStats();
+            
+            closeLocationModal();
+            showToast("Location updated successfully");
+        }
+
+        function closeLocationModal() {
+            const modal = document.getElementById("location-modal");
+            if (modal) modal.remove();
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tab) {
+            // Hide all sections
+            document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+            
+            // Show target
+            const target = document.getElementById(`tab-${tab}`);
+            if (target) target.classList.add("active");
+            
+            // Update bottom nav active state (mobile)
+            document.querySelectorAll(".nav-item").forEach(el => {
+                el.classList.remove("active", "text-[#008751]");
+                el.classList.add("text-[#6B7280]");
+                
+                if (el.dataset.tab === tab) {
+                    el.classList.add("active", "text-[#008751]");
+                    el.classList.remove("text-[#6B7280]");
+                }
+            });
+            
+            // Special actions per tab
+            if (tab === "search") {
+                setTimeout(() => {
+                    const input = document.getElementById("search-input");
+                    if (input) input.focus();
+                }, 300);
+            }
+            
+            if (tab === "trends") {
+                setTimeout(() => {
+                    if (!document.getElementById("trends-item-select").value) {
+                        updateTrendsItemSelect();
+                    }
+                }, 200);
+            }
+            
+            if (tab === "cart") {
+                renderCart();
+            }
+        }
+
+        function switchToLogPrice() {
+            // Close search empty state if open
+            document.getElementById("search-empty").classList.add("hidden");
+            showLogPriceModal();
+        }
+
+        // ==================== INITIALIZATION ====================
+        function initializeApp() {
+            loadFromLocalStorage();
+            
+            // Seed data if empty
+            seedInitialData();
+            
+            // Populate UI elements
+            populateCategoryGrid();
+            populateItemSuggestions();
+            populateRegionDropdowns();
+            populateCartItemSelect();
+            updateTrendsItemSelect();
+            
+            // Initial renders
+            updateHeaderLocation();
+            renderHomePriceBoard();
+            updateCommunityStats();
+            renderCart();
+            
+            // Set default tab
+            document.getElementById("tab-home").classList.add("active");
+            
+            // Keyboard support for search
+            const searchInput = document.getElementById("search-input");
+            if (searchInput) {
+                searchInput.addEventListener("keypress", function(e) {
+                    if (e.key === "Enter") performSearch();
+                });
+            }
+            
+            // Make category chips keyboard accessible (basic)
+            console.log("%c[PriceCheck GH] App initialized successfully", "color:#008751");
+            
+            // Optional: Show a welcome toast on very first real use
+            if (!localStorage.getItem("pricecheck_welcomed")) {
+                setTimeout(() => {
+                    showToast("Welcome to PriceCheck GH 🇬🇭");
+                    localStorage.setItem("pricecheck_welcomed", "true");
+                }, 1200);
+            }
+        }
+
+        // Boot the app
+        function bootApp() {
+            const hasOnboarded = localStorage.getItem("pricecheck_onboarded");
+            
+            if (!hasOnboarded) {
+                // Show onboarding
+                document.getElementById("onboarding").classList.remove("hidden");
+                document.getElementById("app").classList.add("hidden");
+                initializeOnboarding();
+            } else {
+                // Skip straight to app
+                document.getElementById("onboarding").classList.add("hidden");
+                document.getElementById("app").classList.remove("hidden");
+                initializeApp();
+            }
+            
+            // Expose some functions for debugging (optional)
+            window.PriceCheckGH = { 
+                resetData: () => { localStorage.clear(); location.reload(); },
+                getPrices: () => prices 
+            };
+        }
+
+        // Start everything
+        window.onload = bootApp;
+    </script>
+</body>
+</html>
