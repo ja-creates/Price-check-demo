@@ -1994,7 +1994,7 @@ body {
             <div class="setting-sub">Connects devices that never meet physically. Use the public relay or point to your own server or Raspberry Pi.</div>
           </div>
           <div class="relay-input-wrap">
-            <input type="url" class="form-input" id="relayUrl" value="https://gun-manhattan.herokuapp.com/gun" aria-label="Relay server URL"/>
+            <input type="url" class="form-input" id="relayUrl" placeholder="https://your-relay.onrender.com/gun" aria-label="Relay server URL"/>
             <button class="btn btn-outline" onclick="changeRelay()" style="padding:10px 14px;font-size:0.8rem;flex-shrink:0">Apply</button>
           </div>
         </div>
@@ -3184,8 +3184,25 @@ let peerSet = new Set();
 let syncBannerTimeout = null;
 let syncInitialized = false;
 
-const DEFAULT_RELAY = 'https://gun-manhattan.herokuapp.com/gun';
-const GUN_NAMESPACE = 'pricech3ck_gh_v1'; // change to namespace your data
+// ── Relay configuration ─────────────────────────────────────
+// Primary: set this to YOUR Render relay URL once deployed
+// Fallbacks tried in order if primary fails
+const YOUR_RELAY = ''; // <-- paste your Render URL here e.g. 'https://pricech3ck-relay.onrender.com/gun'
+
+const RELAY_FALLBACKS = [
+  'https://gundb-relay-mlccl.ondigitalocean.app/gun',
+  'wss://relay.peer.ooo/gun',
+  'https://gun-us.herokuapp.com/gun',
+];
+
+// Build the active relay list — yours first if set, then fallbacks
+const ACTIVE_RELAYS = [
+  ...(YOUR_RELAY ? [YOUR_RELAY] : []),
+  ...RELAY_FALLBACKS
+];
+
+const DEFAULT_RELAY = ACTIVE_RELAYS[0];
+const GUN_NAMESPACE = 'pricech3ck_gh_v1';
 
 // ── Sync Status UI ─────────────────────────────────────────
 function setSyncStatus(status, label) {
@@ -3377,11 +3394,18 @@ function fetchGunHistory() {
 
 // ── Init Gun ────────────────────────────────────────────────
 function initGun(relayUrl) {
-  relayUrl = relayUrl || localStorage.getItem('pcgh_relay') || DEFAULT_RELAY;
+  // If a specific relay passed (from profile settings), use only that
+  // Otherwise connect to ALL known relays simultaneously
+  const savedRelay = localStorage.getItem('pcgh_relay');
+  const peers = relayUrl
+    ? [relayUrl]
+    : savedRelay
+      ? [savedRelay]
+      : ACTIVE_RELAYS; // connect to all fallbacks at once
 
   try {
     gun = Gun({
-      peers: [relayUrl],
+      peers,
       localStorage: false,
       radisk: false
     });
@@ -3399,9 +3423,9 @@ function initGun(relayUrl) {
         gunEntries.map().on((data, key) => {
           handleIncomingEntry(data, key);
         });
-      }, 5500); // start live listener after history load window
+      }, 5500);
 
-    }, 1200); // give Gun time to connect before fetching
+    }, 1200);
 
     // Track peer connections
     gun.on('hi', peer => {
@@ -3409,9 +3433,7 @@ function initGun(relayUrl) {
       peerSet.add(id);
       setSyncStatus('synced', 'Synced');
       updatePeersList();
-
       // FIX 3: Push all local entries every time a peer connects
-      // so relay always has latest data even after restart
       pushAllLocalEntries();
     });
 
