@@ -65,7 +65,7 @@ body {
   min-height: 100vh;
   width: 100%;
   position: relative;
-  transition: background var(--ease, 200ms), color var(--ease, 200ms);
+  transition: background var(--transition), color var(--transition);
   overflow-x: hidden;
 }
 
@@ -246,10 +246,179 @@ body {
 .fab:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(0,135,81,0.55); }
 @media (min-width: 1024px) { .fab { display: none; } }
 
-/* ── PAGES ────────────────────────────────────────────────────── */
-.page { display: none; }
-.page.active { display: block; animation: fadeIn 230ms ease forwards; }
-@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:translateY(0); } }
+/* ── PAGES ─ defined in responsive block below ──────────────── */
+
+/* ══════════════════════════════════════════════════════════
+   ANIMATION SYSTEM
+══════════════════════════════════════════════════════════ */
+
+/* Spring easing tokens */
+:root {
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Card stagger entrance */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.price-card {
+  animation: cardIn 380ms var(--spring) both;
+}
+.price-card:nth-child(1)  { animation-delay: 0ms; }
+.price-card:nth-child(2)  { animation-delay: 50ms; }
+.price-card:nth-child(3)  { animation-delay: 100ms; }
+.price-card:nth-child(4)  { animation-delay: 150ms; }
+.price-card:nth-child(5)  { animation-delay: 180ms; }
+.price-card:nth-child(6)  { animation-delay: 210ms; }
+.price-card:nth-child(7)  { animation-delay: 240ms; }
+.price-card:nth-child(8)  { animation-delay: 260ms; }
+.price-card:nth-child(n+9){ animation-delay: 280ms; }
+
+/* Card press state */
+.price-card:active { transform: scale(0.97); transition: transform 80ms var(--ease-out); }
+
+/* Button press state */
+.btn:active       { transform: scale(0.96); transition: transform 80ms var(--ease-out); }
+.nav-item:active  { transform: scale(0.9); }
+.icon-btn:active  { transform: scale(0.88); }
+.chip:active      { transform: scale(0.94); }
+.denom-btn:active { transform: scale(0.92); }
+
+/* Chip active indicator — sliding underline */
+.chip {
+  position: relative;
+  overflow: hidden;
+}
+.chip::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; right: 50%;
+  height: 2px;
+  background: white;
+  border-radius: 1px;
+  transition: left 220ms var(--ease-out), right 220ms var(--ease-out);
+}
+.chip.active::after { left: 12%; right: 12%; }
+
+/* Nav item sliding indicator */
+.nav-item.active::before {
+  animation: slideInIndicator 250ms var(--spring) both;
+}
+@keyframes slideInIndicator {
+  from { left: 40%; right: 40%; opacity: 0; }
+  to   { left: 20%; right: 20%; opacity: 1; }
+}
+
+/* Stat counter — numbers animate in */
+@keyframes countIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stat-value { animation: countIn 500ms var(--spring) both; }
+.stat-value:nth-child(1) { animation-delay: 100ms; }
+.stat-value:nth-child(2) { animation-delay: 180ms; }
+.stat-value:nth-child(3) { animation-delay: 260ms; }
+
+/* Page transitions */
+@keyframes pageSlideIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page.active { animation: pageFadeIn 240ms var(--ease-out) both; }
+.page.active.slide-in { animation: pageSlideIn 260ms var(--ease-out) both; }
+
+/* Tricolor pulse on new data */
+@keyframes triPulse {
+  0%   { opacity: 1; }
+  40%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+.tribar.pulse .tribar-r  { animation: triPulse 800ms var(--ease-in-out); }
+.tribar.pulse .tribar-g  { animation: triPulse 800ms var(--ease-in-out) 120ms; }
+.tribar.pulse .tribar-gr { animation: triPulse 800ms var(--ease-in-out) 240ms; }
+
+/* Toast spring entrance */
+@keyframes toastSpring {
+  from { opacity: 0; transform: translateY(-16px) scale(0.92); }
+  60%  { transform: translateY(3px) scale(1.01); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast { animation: toastSpring 360ms var(--spring) both; }
+
+/* Skeleton loader */
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-raised) 25%, var(--surface) 50%, var(--surface-raised) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+.skeleton-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sk-line { height: 12px; }
+.sk-line-short { width: 40%; }
+.sk-line-med   { width: 65%; }
+.sk-price      { height: 28px; width: 55%; }
+
+/* Flag button on price cards */
+.card-flag-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-tertiary); padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  line-height: 0;
+}
+.card-flag-btn:hover { color: var(--gh-red); background: rgba(206,17,38,0.07); }
+.card-flag-btn.flagged { color: var(--gh-red); }
+
+/* Rate limit warning */
+.rate-limit-bar {
+  height: 3px;
+  background: var(--gh-gold);
+  border-radius: 2px;
+  margin-top: 8px;
+  transition: width 300ms var(--ease-out);
+}
+
+/* Smooth select transitions */
+.form-select option { font-family: var(--font-body); }
+
+/* Focus ring animation */
+:focus-visible {
+  outline: 2px solid var(--gh-green);
+  outline-offset: 2px;
+  animation: focusRing 200ms var(--spring);
+}
+@keyframes focusRing {
+  from { outline-offset: 6px; outline-color: transparent; }
+  to   { outline-offset: 2px; outline-color: var(--gh-green); }
+}
+
+/* Smooth number display */
+.card-price, .cart-total-amount, .stat-value, .entry-price {
+  font-variant-numeric: tabular-nums;
+  transition: color 300ms var(--ease-out);
+}
+
+/* Scroll behavior */
+.chips-wrap, .search-filters { scroll-behavior: smooth; }
+
 
 /* ── LOCATION BANNER ──────────────────────────────────────────── */
 .location-banner {
@@ -876,19 +1045,42 @@ body {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--text-tertiary);
   flex-shrink: 0;
-  transition: background var(--transition);
+  transition: background 300ms ease;
 }
+
+/* syncing — pulsing gold dot */
 .sync-indicator.syncing .sync-dot {
   background: var(--gh-gold);
-  animation: pulse 1s ease-in-out infinite;
+  animation: pulse 1.1s ease-in-out infinite;
 }
+.sync-indicator.syncing { color: var(--text-secondary); }
+
+/* synced — solid green */
 .sync-indicator.synced .sync-dot { background: var(--gh-green); }
-.sync-indicator.synced { border-color: rgba(0,135,81,0.25); color: var(--gh-green); }
+.sync-indicator.synced {
+  border-color: rgba(0,135,81,0.25);
+  color: var(--gh-green);
+}
+
+/* error — solid red */
 .sync-indicator.error .sync-dot { background: var(--gh-red); }
-.sync-indicator.error { border-color: rgba(206,17,38,0.2); color: var(--gh-red); }
+.sync-indicator.error {
+  border-color: rgba(206,17,38,0.2);
+  color: var(--gh-red);
+}
+
+/* offline — amber, distinct from error */
+.sync-indicator.offline .sync-dot { background: #c47c00; }
+.sync-indicator.offline {
+  border-color: rgba(196,124,0,0.25);
+  color: #c47c00;
+}
+[data-theme="dark"] .sync-indicator.offline .sync-dot { background: var(--gh-gold); }
+[data-theme="dark"] .sync-indicator.offline { color: var(--gh-gold); border-color: rgba(252,209,22,0.25); }
+
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.7); }
+  50%       { opacity: 0.35; transform: scale(0.65); }
 }
 
 /* ── SYNC BANNER (incoming data notification) ─────────────────── */
@@ -921,174 +1113,136 @@ body {
 .peer-item:last-child { border-bottom: none; }
 .peer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gh-green); flex-shrink: 0; }
 
-/* ══ MOBILE RESPONSIVE FIXES ══════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE SYSTEM — single source of truth
+   320px → 380px → 560px → 768px → 1024px → 1280px → 1440px
+══════════════════════════════════════════════════════════ */
 
-/* FIX 1: form-page needs bottom padding so submit btn clears bottom nav + FAB */
-.form-page { padding-bottom: calc(var(--nav-h) + 80px) !important; }
-.cart-page { padding-bottom: calc(var(--nav-h) + 32px) !important; }
-.trends-page { padding-bottom: calc(var(--nav-h) + 32px) !important; }
-.search-page { padding-bottom: calc(var(--nav-h) + 32px) !important; }
-.recent-page { padding-bottom: calc(var(--nav-h) + 32px) !important; }
-.profile-page { padding-bottom: calc(var(--nav-h) + 32px) !important; }
-@media (min-width: 1024px) {
-  .form-page, .cart-page, .trends-page,
-  .search-page, .recent-page, .profile-page {
-    padding-bottom: 48px !important;
-  }
-}
-
-/* FIX 2: sidebar-nav-item missing border:none */
-.sidebar-nav-item { border: none; }
-
-/* FIX 3: hide mobile header on desktop */
-@media (min-width: 1024px) {
-  .app-header { display: none; }
-}
-
-/* FIX 4: iOS Safari — inputs must be 16px to prevent auto-zoom on focus */
-.form-input, .form-select, .form-textarea,
-.search-input, .filter-select {
-  font-size: 16px !important;
-}
-/* restore smaller visual size using transform trick for non-iOS */
-@supports not (-webkit-touch-callout: none) {
-  .form-input, .form-select, .form-textarea,
-  .search-input, .filter-select {
-    font-size: 0.9rem !important;
-  }
-}
-
-/* FIX 5: cat-grid — 2 cols on very small screens, 4 on wider */
-@media (max-width: 380px) {
-  .cat-grid { grid-template-columns: repeat(2, 1fr); }
-  .cat-tile { padding: 14px 6px; font-size: 0.72rem; }
-}
-
-/* FIX 6: page animation only on active state (not all hidden pages) */
-.page { display: none; }
-.page.active { display: block; animation: fadeIn 240ms ease; }
-
-/* FIX 7: onboarding above tribar */
+/* ── Base fixes (all screens) ──────────────────────────── */
+.sidebar-nav-item   { border: none; }
+.page               { display: none; }
+.page.active        { display: block; animation: fadeIn 230ms ease forwards; }
+@keyframes fadeIn   { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 .onboarding-overlay { z-index: 1100; }
+.offline-banner     { z-index: 150; }
+.trend-badge        { white-space: nowrap; flex-shrink: 0; }
+.cart-add-row       { align-items: center; }
+.cart-add-row .btn  { flex-shrink: 0; }
+.sheet              { max-height: 88vh; }
+.toast-container    { max-width: 100%; padding: 0 14px; }
 
-/* FIX 8: FAB — keep within body bounds on mobile, clear bottom nav */
-@media (max-width: 480px) {
-  .fab {
-    right: 16px;
-    bottom: calc(var(--nav-h) + 12px);
-  }
+/* Location banner truncation */
+.location-left        { min-width: 0; overflow: hidden; }
+.location-left strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+/* iOS Safari: 16px min prevents auto-zoom on input focus */
+.form-input, .form-select, .form-textarea, .search-input, .filter-select { font-size: 16px !important; }
+@supports not (-webkit-touch-callout: none) {
+  .form-input, .form-select, .form-textarea, .search-input, .filter-select { font-size: 0.9rem !important; }
 }
 
-/* FIX 9: offline banner stacking — above header */
-.offline-banner { z-index: 150; }
+/* Page bottom padding — clears nav + FAB + safe area */
+.form-page    { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 80px) !important; }
+.cart-page, .trends-page, .recent-page,
+.profile-page { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 32px) !important; }
+#page-home    { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 24px); }
 
-/* FIX 10: toast — full width safe on 360px */
-.toast-container { max-width: 100%; padding: 0 14px; }
-@media (min-width: 480px) { .toast-container { max-width: 440px; padding: 0 20px; } }
-
-/* FIX 12: home page bottom padding clears nav + FAB */
-#page-home { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 24px); }
-@media (min-width: 1024px) { #page-home { padding-bottom: 48px; } }
-
-/* FIX 13: search page header sticky top accounts for tribar */
-.search-page .app-header {
-  display: flex;
-  position: sticky;
-  top: var(--tribar-h);
-  z-index: 50;
+/* Bottom nav + FAB safe area */
+.bottom-nav {
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  padding-bottom: env(safe-area-inset-bottom,0px);
 }
-@media (min-width: 1024px) { .search-page .app-header { display: none; } }
+.fab { bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 14px); }
 
-/* FIX 14: cart-add-row on small screens — button doesn't shrink */
-.cart-add-row .btn { flex-shrink: 0; }
-.cart-add-row { align-items: center; }
+/* Fluid typography */
+.logo-text         { font-size: clamp(1.1rem, 4vw, 1.4rem); white-space: nowrap; }
+.section-title     { font-size: clamp(1.1rem, 4vw, 1.3rem); }
+.card-price        { font-size: clamp(1.35rem, 5vw, 1.8rem); }
+.stat-value        { font-size: clamp(1.1rem, 4vw, 1.4rem); }
+.cart-total-amount { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+.onboard-title     { font-size: clamp(1.5rem, 6vw, 2rem); }
+.profile-name      { font-size: clamp(1.1rem, 5vw, 1.4rem); }
 
-/* FIX 15: denom buttons wrap cleanly on 360px */
-@media (max-width: 380px) {
-  .denom-btns { gap: 6px; }
-  .denom-btn { padding: 5px 9px; font-size: 0.74rem; }
-}
-
-/* FIX 16: profile stats grid responsive */
-@media (max-width: 360px) {
+/* ── 320px — absolute minimum ───────────────────────────── */
+@media (max-width: 359px) {
+  .search-wrap, .chips-wrap { padding-left: 12px; padding-right: 12px; }
+  .chips-wrap  { gap: 5px; }
+  .chip        { padding: 5px 10px; font-size: 0.72rem; }
+  .cards-list  { padding: 0 12px; }
+  .stats-bar   { margin: 10px 12px; padding: 10px; }
+  .section-header { padding: 12px 12px 8px; }
+  .location-banner, .app-header { padding-left: 12px; padding-right: 12px; }
+  .form-page, .cart-page, .recent-page, .profile-page { padding-left: 12px !important; padding-right: 12px !important; }
+  .cart-item          { flex-wrap: wrap; }
+  .cart-item-controls { width: 100%; justify-content: flex-end; margin-top: 6px; }
   .profile-stats-grid { grid-template-columns: 1fr; }
 }
 
-/* FIX 17: location banner text truncation on small screens */
-.location-left { min-width: 0; overflow: hidden; }
-.location-left strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-
-/* FIX 18: entry-item layout on very small screens */
+/* ── 380px — small Android ──────────────────────────────── */
 @media (max-width: 380px) {
-  .entry-item { flex-direction: column; gap: 8px; }
-  .entry-price { font-size: 1rem; }
+  .cat-grid    { grid-template-columns: repeat(2,1fr); }
+  .cat-tile    { padding: 14px 6px; font-size: 0.72rem; }
+  .card-top    { flex-wrap: wrap; gap: 5px; }
+  .trend-badge { font-size: 0.63rem; padding: 2px 6px; }
+  .price-card  { padding: 12px; }
+  .denom-btn   { padding: 5px 9px; font-size: 0.74rem; }
+  .lb-sub      { display: none; }
+  .profile-avatar      { width: 60px; height: 60px; }
+  .profile-avatar span { font-size: 1.5rem; }
+  .entry-item  { flex-direction: column; gap: 8px; }
 }
 
-/* FIX 19: trend badge text wrapping */
-.trend-badge { white-space: nowrap; flex-shrink: 0; }
-
-/* FIX 20: sheet max-width on desktop */
-@media (min-width: 1024px) {
-  .overlay { align-items: center; justify-content: center; }
-  .sheet {
-    max-width: 480px;
-    border-radius: var(--radius-xl);
-    margin: 20px;
-  }
+/* ── 480px — large phone ────────────────────────────────── */
+@media (min-width: 480px) {
+  .toast-container { max-width: 440px; padding: 0 20px; }
+  #trendItemSelect { max-width: 148px; }
 }
 
-/* ══ MULTI-DEVICE ADAPTABILITY ═══════════════════════════════ */
+/* ── 560px — 2-col cards ────────────────────────────────── */
+@media (min-width: 560px) {
+  .cards-list { grid-template-columns: 1fr 1fr; }
+}
 
-/* ── FLUID TYPOGRAPHY ─────────────────────────────────────── */
-.logo-text { font-size: clamp(1.1rem, 4vw, 1.4rem); white-space: nowrap; }
-.section-title { font-size: clamp(1.1rem, 4vw, 1.3rem); }
-.card-price { font-size: clamp(1.35rem, 5vw, 1.8rem); }
-.stat-value { font-size: clamp(1.1rem, 4vw, 1.4rem); }
-.cart-total-amount { font-size: clamp(1.6rem, 6vw, 2.2rem); }
-.onboard-title { font-size: clamp(1.5rem, 6vw, 2rem); }
-.profile-name { font-size: clamp(1.1rem, 5vw, 1.4rem); }
+/* ── 600px — search filter wrap ────────────────────────── */
+@media (min-width: 600px) {
+  .search-filters { flex-wrap: wrap; }
+  .filter-select  { min-width: 160px; }
+}
 
-/* ── TABLET SIDEBAR (768–1023px) ──────────────────────────── */
+/* ── 768px TABLET ───────────────────────────────────────── */
 @media (min-width: 768px) and (max-width: 1023px) {
-  body { max-width: 100%; }
-  .sidebar {
-    display: flex; width: 220px;
-    position: fixed; top: var(--tribar-h); left: 0; bottom: 0; z-index: 200;
-  }
+  .sidebar      { display: flex; width: 220px; position: fixed; top: var(--tribar-h); left: 0; bottom: 0; z-index: 200; }
   .main-content { margin-left: 220px; }
-  .bottom-nav { display: none; }
-  .fab { display: none; }
-  .form-page, .cart-page, .trends-page,
-  .recent-page, .profile-page {
-    max-width: 680px; margin: 0 auto;
-    padding-bottom: 48px !important;
+  .bottom-nav, .fab { display: none; }
+  .form-page, .cart-page, .trends-page, .recent-page, .profile-page {
+    max-width: 680px; margin: 0 auto; padding-bottom: 48px !important;
   }
+  #page-home { padding-bottom: 32px; }
 }
 
-/* ── DESKTOP (1024–1279px) ────────────────────────────────── */
+/* ── 1024px DESKTOP ─────────────────────────────────────── */
 @media (min-width: 1024px) {
-  .chart-wrap { height: 280px; }
-  .insight-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-  .form-page, .cart-page { max-width: 640px; margin: 0 auto; }
-  .trends-page { max-width: 900px; margin: 0 auto; }
+  .app-header, .bottom-nav, .fab { display: none; }
+  .sidebar {
+    display: flex; width: 260px;
+    position: fixed; top: var(--tribar-h); left: 0; bottom: 0;
+    z-index: 100; overflow-y: auto;
+  }
+  .main-content    { margin-left: 260px; padding-bottom: 32px; }
+  .cards-list      { grid-template-columns: 1fr 1fr 1fr; }
+  .chart-wrap      { height: 280px; }
+  .insight-cards   { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .form-page, .cart-page { max-width: 640px; margin: 0 auto; padding-bottom: 48px !important; }
+  .trends-page     { max-width: 900px; margin: 0 auto; padding-bottom: 48px !important; }
+  .recent-page, .profile-page { max-width: 720px; margin: 0 auto; padding-bottom: 48px !important; }
+  #page-home       { padding-bottom: 48px; }
+  .toast-container { left: calc(260px + 50%); transform: translateX(-50%); max-width: 400px; }
+  .overlay         { align-items: center; justify-content: center; }
+  .sheet           { max-width: 480px; border-radius: var(--radius-xl); margin: 20px; }
+  #trendItemSelect { max-width: 180px; }
 }
 
-/* ── WIDE DESKTOP (1280px+) ───────────────────────────────── */
-@media (min-width: 1280px) {
-  .chart-wrap { height: 300px; }
-  /* Cap only form/content pages — NOT home cards which need full width */
-  .form-page, .cart-page, .trends-page,
-  .recent-page, .profile-page { max-width: 780px; margin: 0 auto; }
-}
-
-/* ── ULTRA-WIDE (1440px+) ─────────────────────────────────── */
-@media (min-width: 1440px) {
-  .chart-wrap { height: 320px; }
-  .form-page, .cart-page, .trends-page,
-  .recent-page, .profile-page { max-width: 860px; margin: 0 auto; }
-}
-
-/* ── SIDEBAR NARROWER at 1024–1199px ──────────────────────── */
+/* ── 1024–1199px — narrow desktop ──────────────────────── */
 @media (min-width: 1024px) and (max-width: 1199px) {
   .sidebar { width: 220px; }
   .main-content { margin-left: 220px; }
@@ -1096,97 +1250,59 @@ body {
   .sidebar-logo { padding: 0 18px 24px; }
 }
 
-/* ── LANDSCAPE MOBILE (height < 500px) ───────────────────── */
+/* ── 1280px ─────────────────────────────────────────────── */
+@media (min-width: 1280px) {
+  .chart-wrap { height: 300px; }
+  .form-page, .cart-page { max-width: 720px; }
+  .trends-page { max-width: 1000px; }
+  .recent-page, .profile-page { max-width: 800px; }
+}
+
+/* ── 1440px ULTRA-WIDE ──────────────────────────────────── */
+@media (min-width: 1440px) {
+  .cards-list { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .chart-wrap { height: 320px; }
+}
+
+/* ── Landscape mobile ───────────────────────────────────── */
 @media (max-height: 500px) and (orientation: landscape) {
-  .onboard-body { padding: 12px 24px; flex-direction: row; gap: 20px; text-align: left; }
+  .onboard-body  { padding: 12px 24px; flex-direction: row; gap: 20px; text-align: left; }
   .onboard-slide { flex-direction: row; align-items: center; gap: 16px; }
-  .onboard-svg { margin-bottom: 0; flex-shrink: 0; }
-  .onboard-svg svg { width: 72px; height: 72px; }
-  .onboard-title { font-size: 1.2rem; margin-bottom: 6px; }
-  .onboard-body-text { font-size: 0.78rem; }
-  .onboard-twi { display: none; }
-  .onboard-footer { padding: 10px 24px; }
-  .form-group { margin-bottom: 10px; }
-  .app-header { padding: 8px 20px; }
-  .location-banner { padding: 6px 20px; }
-  .chart-wrap { height: 150px; }
+  .onboard-svg   { margin-bottom: 0; flex-shrink: 0; }
+  .onboard-svg svg    { width: 72px; height: 72px; }
+  .onboard-title      { font-size: 1.2rem; margin-bottom: 6px; }
+  .onboard-body-text  { font-size: 0.78rem; }
+  .onboard-twi        { display: none; }
+  .onboard-footer     { padding: 10px 24px; }
+  .form-group  { margin-bottom: 10px; }
+  .chart-wrap  { height: 150px; }
 }
 
-/* ── CARD OVERFLOW FIX on 360–380px ──────────────────────── */
-@media (max-width: 380px) {
-  .card-top { flex-wrap: wrap; gap: 5px; }
-  .trend-badge { font-size: 0.63rem; padding: 2px 6px; }
-  .card-price { font-size: 1.4rem; }
-  .price-card { padding: 12px; }
-  .lb-sub { display: none; }
-  .profile-avatar { width: 60px; height: 60px; }
-  .profile-avatar span { font-size: 1.5rem; }
-}
-
-/* ── VERY SMALL (< 360px) — iPhone SE 1st gen ────────────── */
-@media (max-width: 359px) {
-  .search-wrap { padding: 10px 12px 6px; }
-  .chips-wrap { padding: 6px 12px 8px; gap: 5px; }
-  .chip { padding: 5px 10px; font-size: 0.72rem; }
-  .cards-list { padding: 0 12px; }
-  .stats-bar { margin: 10px 12px; padding: 10px; }
-  .stat-value { font-size: 1rem; }
-  .section-header { padding: 12px 12px 8px; }
-  .location-banner { padding: 7px 12px; }
-  .app-header { padding: 10px 12px; }
-  .form-page, .cart-page, .recent-page, .profile-page { padding-left: 12px; padding-right: 12px; }
-  .cart-item { flex-wrap: wrap; }
-  .cart-item-controls { width: 100%; justify-content: flex-end; margin-top: 6px; }
-}
-
-/* ── CHART SELECT on narrow mobile ───────────────────────── */
-@media (max-width: 480px) {
-  #trendItemSelect { max-width: 148px; font-size: 0.73rem; }
-}
-
-/* ── SEARCH FILTERS on tablet ────────────────────────────── */
-@media (min-width: 600px) {
-  .search-filters { flex-wrap: wrap; }
-  .filter-select { min-width: 160px; }
-}
-
-/* ── TOAST offset for sidebar on desktop ─────────────────── */
-@media (min-width: 768px) { .toast-container { max-width: 400px; } }
-@media (min-width: 1024px) {
-  .toast-container { left: calc(260px + 50%); transform: translateX(-50%); }
-}
-
-/* ── PRINT ────────────────────────────────────────────────── */
+/* ── Print ──────────────────────────────────────────────── */
 @media print {
   .bottom-nav, .fab, .app-header, .sidebar,
   .offline-banner, .tribar, .toast-container,
-  .onboarding-overlay, .overlay, .confetti-canvas,
-  .log-quick-btn, .location-change { display: none !important; }
-  body { max-width: 100%; color: #000; background: #fff; }
+  .onboarding-overlay, .overlay, .confetti-canvas { display: none !important; }
+  body { color: #000; background: #fff; }
   .price-card { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
   .cards-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .main-content { margin-left: 0 !important; padding: 0 16px !important; }
 }
 
-/* ── REDUCED MOTION ───────────────────────────────────────── */
+/* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   .confetti-canvas { display: none; }
 }
 
-/* ── FORCED COLORS (Windows High Contrast) ────────────────── */
+/* ── Forced colors ──────────────────────────────────────── */
 @media (forced-colors: active) {
-  .price-card::before, .stats-bar::after, .cart-total-box::before { display: none; }
+  .price-card::before, .stats-bar::after { display: none; }
   .btn-primary { background: ButtonText; color: ButtonFace; }
   .chip.active { background: Highlight; color: HighlightText; }
-  .nav-item.active { color: Highlight; }
 }
 
-/* ── SYSTEM DARK MODE (before JS toggle runs) ────────────── */
+/* ── System dark mode (before JS loads) ─────────────────── */
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) {
     --bg: #0F0F0F; --surface: #1A1A1A; --surface-raised: #242424;
@@ -1194,7 +1310,6 @@ body {
     --border: #2A2A2A; --border-strong: #3A3A3A;
   }
 }
-
 /* ── OFFLINE BANNER ───────────────────────────────────────────── */
 .offline-banner {
   background: #2c2200; color: #ffe066;
@@ -1245,12 +1360,54 @@ body {
   margin-bottom: 22px; border: 1px solid var(--border); text-align: center;
 }
 .profile-avatar {
-  width: 72px; height: 72px; border-radius: 50%;
+  width: 88px; height: 88px; border-radius: 50%;
   background: linear-gradient(135deg, var(--gh-green), var(--gh-gold));
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px; position: relative;
+  margin: 0 auto 16px; position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px rgba(0,135,81,0.25);
+  transition: box-shadow var(--transition);
 }
-.profile-avatar span { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: white; }
+.profile-avatar:hover {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px rgba(0,135,81,0.45);
+}
+.profile-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 50%;
+  display: block;
+  transition: opacity 300ms ease;
+}
+.profile-avatar img.loading { opacity: 0; }
+.profile-avatar img.loaded  { opacity: 1; }
+/* Fallback initials — shown if image fails */
+.profile-avatar span {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 700; color: white;
+  position: absolute;
+}
+.profile-avatar span.hidden { display: none; }
+
+/* Avatar name badge */
+.avatar-name-badge {
+  font-size: 0.68rem; font-weight: 500;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-top: -10px; margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  position: relative;
+}
+
+/* Small profile avatars in My Entries / Recent */
+.avatar-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+}
+.avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+@media (max-width: 380px) {
+  .profile-avatar { width: 72px; height: 72px; }
+  .profile-avatar span { font-size: 1.6rem; }
+}
 .profile-name { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; position: relative; }
 .profile-sub { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 4px; position: relative; font-family: var(--font-mono); }
 .profile-stats-grid {
@@ -1911,7 +2068,11 @@ body {
     <div class="profile-page">
       <div class="profile-hero">
         <div class="adinkra-bg"></div>
-        <div class="profile-avatar"><span id="profileInitial">A</span></div>
+        <div class="profile-avatar" id="profileAvatarWrap">
+          <img id="profileAvatarImg" src="" alt="Your avatar" class="loading" aria-hidden="true"/>
+          <span id="profileInitial">A</span>
+        </div>
+        <div class="avatar-name-badge" id="avatarNameBadge"></div>
         <div class="profile-name" id="profileName">Anonymous</div>
         <div class="profile-sub" id="profileSub"></div>
         <div class="profile-stats-grid">
@@ -2157,16 +2318,21 @@ function toggleDark() {
 }
 function applyDark() {
   document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
-  const toggle = document.getElementById('darkToggleSidebar');
-  if (toggle) toggle.classList.toggle('on', state.darkMode);
+
+  // Update all toggle switches
+  ['darkToggleSidebar', 'darkToggleProfile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('on', state.darkMode);
+  });
+
+  // Update header icon — sun (dark mode on) vs moon (dark mode off)
+  const sunSvg = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  const moonSvg = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
   const icon = document.getElementById('darkIcon');
-  if (icon) {
-    icon.innerHTML = state.darkMode
-      ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
-      : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
-  }
+  if (icon) icon.innerHTML = state.darkMode ? sunSvg : moonSvg;
+
   if (trendChart) updateTrendChart();
-  if (compChart) updateCompChart();
+  if (compChart)  updateCompChart();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2174,37 +2340,65 @@ function applyDark() {
 // ═══════════════════════════════════════════════════════════
 function toast(msg, twi='', type='success', duration=3500) {
   const c = document.getElementById('toastContainer');
+  if (!c) return;
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   const icons = {
     success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
-    error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
     warning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
   };
   t.innerHTML = `${icons[type]||icons.success}<div class="toast-text">${msg}${twi ? `<span class="toast-twi">${twi}</span>` : ''}</div>`;
   c.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(-8px)'; t.style.transition='all 300ms'; setTimeout(()=>t.remove(),300); }, duration);
+  // Spring exit
+  setTimeout(() => {
+    t.style.cssText = 'opacity:0;transform:translateY(-10px) scale(0.94);transition:all 280ms cubic-bezier(0.4,0,1,1);';
+    setTimeout(() => t.remove(), 300);
+  }, duration);
 }
 
 // ═══════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════
+// Page order for directional transitions
+const PAGE_ORDER = ['home','search','log','cart','trends','recent','profile'];
+let _currentPage = 'home';
+
 function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const prevIdx = PAGE_ORDER.indexOf(_currentPage);
+  const nextIdx = PAGE_ORDER.indexOf(page);
+  const slideIn = nextIdx > prevIdx;
+  _currentPage = page;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active','slide-in'));
   document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
   document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
 
-  document.getElementById('page-' + page).classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) {
+    pageEl.classList.add('active');
+    if (slideIn && prevIdx !== -1 && nextIdx !== -1) pageEl.classList.add('slide-in');
+  }
+
   const navEl = document.getElementById('nav-' + page);
   if (navEl) { navEl.classList.add('active'); navEl.setAttribute('aria-current','page'); }
   const sideEl = document.querySelector(`.sidebar-nav-item[data-page="${page}"]`);
   if (sideEl) sideEl.classList.add('active');
 
-  if (page === 'trends') { setTimeout(()=>{ updateTrendChart(); updateCompChart(); updateLeaderboard(); updateInsights(); }, 100); }
-  if (page === 'home') renderPriceCards();
-  if (page === 'cart') renderCart();
+  // Show skeleton on home while data may still be loading
+  if (page === 'home') {
+    const container = document.getElementById('priceCardsContainer');
+    if (container && !container.children.length) showSkeletonCards(container);
+    renderPriceCards();
+  }
+  if (page === 'cart')    renderCart();
+  if (page === 'recent')  renderRecent();
+  if (page === 'profile') renderProfile();
+  if (page === 'trends')  setTimeout(() => {
+    updateTrendChart(); updateCompChart(); updateLeaderboard(); updateInsights();
+  }, 100);
 
-  window.scrollTo(0,0);
+  window.scrollTo({top: 0, behavior: 'instant'});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2325,6 +2519,54 @@ function getFilteredEntries(category='all', region='', district='', search='') {
   });
 }
 
+// ── Sanitise text input ──────────────────────────────────────
+function sanitise(str) {
+  return String(str || '')
+    .trim()
+    .replace(/[<>"'`]/g, '')   // strip HTML/injection chars
+    .substring(0, 120);        // hard length cap
+}
+
+// ── Rate limiting ────────────────────────────────────────────
+const RATE = {
+  COOLDOWN_MS: 30000,   // 30s between submissions
+  DAILY_CAP:   50,      // max 50 entries per day
+  _lastSubmit: 0,
+  _todayCount: 0,
+  _today: ''
+};
+
+function rateCheck() {
+  const today = new Date().toISOString().split('T')[0];
+  if (RATE._today !== today) { RATE._today = today; RATE._todayCount = 0; }
+  const now = Date.now();
+  const since = now - RATE._lastSubmit;
+  if (since < RATE.COOLDOWN_MS) {
+    const wait = Math.ceil((RATE.COOLDOWN_MS - since) / 1000);
+    toast(`Wait ${wait}s before next submission`, 'Gyina ho kakra — patience!', 'warning', 3000);
+    return false;
+  }
+  if (RATE._todayCount >= RATE.DAILY_CAP) {
+    toast('Daily limit reached (50 prices)', 'Ɔpɛ sɛ wogye ano — try again tomorrow', 'warning', 4000);
+    return false;
+  }
+  return true;
+}
+
+function rateRecord() {
+  RATE._lastSubmit = Date.now();
+  RATE._todayCount++;
+}
+
+// ── Trimmed mean (drops top + bottom 10%) ───────────────────
+function trimmedMean(prices) {
+  if (prices.length <= 2) return prices.reduce((a,b)=>a+b,0)/prices.length;
+  const sorted = [...prices].sort((a,b)=>a-b);
+  const trim = Math.max(1, Math.floor(sorted.length * 0.1));
+  const trimmed = sorted.slice(trim, sorted.length - trim);
+  return trimmed.reduce((a,b)=>a+b,0)/trimmed.length;
+}
+
 function aggregateByItem(entries) {
   const map = {};
   entries.forEach(e => {
@@ -2335,7 +2577,7 @@ function aggregateByItem(entries) {
   });
   return Object.values(map).map(item => {
     const prices = item.prices;
-    const avg = prices.reduce((a,b)=>a+b,0)/prices.length;
+    const avg = trimmedMean(prices);  // trimmed mean — outliers excluded
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const sorted = [...prices];
@@ -2354,9 +2596,47 @@ function trendBadge(trend) {
   return `<span class="trend-badge trend-stable"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>Stable</span>`;
 }
 
+// ── Skeleton loader ──────────────────────────────────────────
+function showSkeletonCards(container, count = 6) {
+  container.innerHTML = Array.from({length: count}, () => `
+    <div class="skeleton-card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span class="skeleton sk-line" style="width:36px;height:36px;border-radius:6px"></span>
+        <span class="skeleton sk-line" style="width:60px;height:20px;border-radius:20px"></span>
+      </div>
+      <span class="skeleton sk-line sk-line-short"></span>
+      <span class="skeleton sk-price"></span>
+      <span class="skeleton sk-line sk-line-med"></span>
+    </div>`).join('');
+}
+
+// ── Flag a price card ────────────────────────────────────────
+function flagItem(itemName, e) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  const key = 'flag_' + itemName.toLowerCase().replace(/\s+/g,'_');
+  const flagged = localStorage.getItem(key);
+  if (flagged) {
+    toast('Already flagged', 'Wo de akyerɛ se ɛnyɛ pɛ', 'warning', 2000);
+    return;
+  }
+  localStorage.setItem(key, '1');
+  btn.classList.add('flagged');
+  btn.setAttribute('aria-label', 'Flagged as suspicious');
+  toast('Price flagged', 'Medaase — we will review it', 'success', 3000);
+}
+
+// ── Tricolor pulse on new data ───────────────────────────────
+function pulseTribar() {
+  const bar = document.querySelector('.tribar');
+  if (!bar) return;
+  bar.classList.add('pulse');
+  setTimeout(() => bar.classList.remove('pulse'), 1200);
+}
+
 function renderPriceCards() {
   const container = document.getElementById('priceCardsContainer');
-  const search = document.getElementById('homeSearch').value;
+  const search = document.getElementById('homeSearch') ? document.getElementById('homeSearch').value : '';
   const entries = getFilteredEntries(state.activeCategory, state.location.region, state.location.district, search);
   const items = aggregateByItem(entries);
 
@@ -2374,14 +2654,18 @@ function renderPriceCards() {
         </svg>
         <h3>No prices logged yet</h3>
         <p>Be the first to log prices in your area and help your community shop smarter.</p>
-        <p class="empty-twi">"Ɔbaa baako nkyekyem ne ho nkwa" — One person alone cannot lift their community</p>
+        <p class="empty-twi">"Ɔbaa baako nkyekyem ne ho nkwa" — Start today!</p>
         <button class="btn btn-primary" onclick="showPage('log')">Log First Price</button>
       </div>`;
     return;
   }
 
-  container.innerHTML = items.map(item => `
-    <div class="price-card" onclick="showPage('log')" tabindex="0" role="button" aria-label="${item.item_name} price card">
+  container.innerHTML = items.map((item, i) => {
+    const isFlagged = localStorage.getItem('flag_' + item.item_name.toLowerCase().replace(/\s+/g,'_'));
+    return `
+    <div class="price-card" tabindex="0" role="article"
+         aria-label="${item.item_name} community average GH₵${item.avg.toFixed(2)}"
+         style="animation-delay:${Math.min(i * 50, 300)}ms">
       ${ADINKRA_SVG}
       <div class="card-top">
         <div class="card-cat-icon">${CAT_ICONS[item.category]||CAT_ICONS.other}</div>
@@ -2395,26 +2679,55 @@ function renderPriceCards() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           ${item.count} ${item.count===1?'entry':'entries'}
         </div>
-        <button class="log-quick-btn" onclick="event.stopPropagation();showPage('log')">Log this</button>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="card-flag-btn ${isFlagged?'flagged':''}"
+            onclick="flagItem('${item.item_name.replace(/'/g,"\\'")}', event)"
+            aria-label="Flag this price as suspicious">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="${isFlagged?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          </button>
+          <button class="log-quick-btn" onclick="event.stopPropagation();document.getElementById('logItem').value='${item.item_name.replace(/'/g,"\\'")}';showPage('log')">Log this</button>
+        </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterCategory(cat, el) {
   state.activeCategory = cat;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.chip').forEach(c => {
+    c.classList.remove('active');
+    c.setAttribute('aria-selected', 'false');
+  });
   el.classList.add('active');
+  el.setAttribute('aria-selected', 'true');
   renderPriceCards();
 }
 function homeSearchFilter() { renderPriceCards(); }
 
+function animateCount(id, target, duration = 800) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) return;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    // ease-out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
 function updateStats() {
   const entries = state.entries;
-  document.getElementById('statEntries').textContent = entries.length;
   const users = new Set(entries.map(e=>e.user_id)).size;
-  document.getElementById('statContrib').textContent = users;
   const districts = new Set(entries.filter(e=>e.district).map(e=>e.district)).size;
-  document.getElementById('statDistricts').textContent = districts;
+  animateCount('statEntries',   entries.length);
+  animateCount('statContrib',   users);
+  animateCount('statDistricts', districts);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2503,48 +2816,51 @@ function checkAnomaly() {
 }
 
 function submitPrice() {
-  const item = document.getElementById('logItem').value.trim();
-  const cat = document.getElementById('logCategory').value || selectedCategory;
-  const price = parseFloat(document.getElementById('logPrice').value);
-  const unit = document.getElementById('logUnit').value;
-  const region = document.getElementById('logRegion').value;
-  const district = document.getElementById('logDistrict').value;
-  const market = document.getElementById('logMarket').value.trim();
-  const date = document.getElementById('logDate').value;
-  const note = document.getElementById('logNote').value.trim();
+  // Rate limit check first
+  if (!rateCheck()) return;
 
-  if (!item) { toast('Enter an item name', 'Kyerɛ item no din', 'error'); return; }
-  if (!price || price <= 0) { toast('Enter a valid price', 'Kyerɛ price a ɛtɔ so', 'error'); return; }
-  if (!cat) { toast('Select a category', 'Paw category', 'error'); return; }
-  if (!region) { toast('Select your region', 'Paw wo region', 'error'); return; }
-  if (!date) { toast('Select the purchase date', 'Kyerɛ da', 'error'); return; }
+  const item  = sanitise(document.getElementById('logItem').value);
+  const cat   = document.getElementById('logCategory').value || selectedCategory;
+  const price = parseFloat(document.getElementById('logPrice').value);
+  const unit  = document.getElementById('logUnit').value;
+  const region   = document.getElementById('logRegion').value;
+  const district = document.getElementById('logDistrict').value;
+  const market   = sanitise(document.getElementById('logMarket').value);
+  const date  = document.getElementById('logDate').value;
+  const note  = sanitise(document.getElementById('logNote').value);
+
+  if (!item)            { toast('Enter an item name',     'Kyerɛ item no din',        'error'); return; }
+  if (!price || price <= 0) { toast('Enter a valid price', 'Kyerɛ price a ɛtɔ so',   'error'); return; }
+  if (price > 100000)   { toast('Price seems too high — check and resubmit', 'Ei! Sɛbi ɛyɛ nea', 'warning'); return; }
+  if (!cat)             { toast('Select a category',      'Paw category',             'error'); return; }
+  if (!region)          { toast('Select your region',     'Paw wo region',            'error'); return; }
+  if (!date)            { toast('Select the purchase date','Kyerɛ da',               'error'); return; }
 
   const entry = {
-    id: Date.now().toString(36) + Math.random().toString(36).substr(2,4),
-    item_name: item,
-    category: cat,
-    price_ghs: price,
-    unit, region, district, market_shop: market,
+    id:          Date.now().toString(36) + Math.random().toString(36).substr(2,4),
+    item_name:   item,
+    category:    cat,
+    price_ghs:   price,
+    unit, region, district,
+    market_shop: market,
     date_logged: date,
-    user_id: state.user.id,
+    user_id:     state.user.id,
     note,
-    created_at: new Date().toISOString()
+    created_at:  new Date().toISOString()
   };
 
   const isFirst = state.entries.length === 0;
 
   state.entries.push(entry);
+  rateRecord();
   saveState();
 
   // Reset form
-  document.getElementById('logItem').value='';
-  document.getElementById('logPrice').value='';
-  document.getElementById('logNote').value='';
-  document.getElementById('logMarket').value='';
+  ['logItem','logPrice','logNote','logMarket'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('anomalyWarning').classList.remove('show');
-  document.querySelectorAll('.cat-tile').forEach(t=>{t.classList.remove('selected');t.setAttribute('aria-checked','false');});
-  selectedCategory='';
-  document.getElementById('logCategory').value='';
+  document.querySelectorAll('.cat-tile').forEach(t => { t.classList.remove('selected'); t.setAttribute('aria-checked','false'); });
+  selectedCategory = '';
+  document.getElementById('logCategory').value = '';
 
   if (isFirst) launchConfetti();
 
@@ -2554,13 +2870,12 @@ function submitPrice() {
     'success', 4000
   );
 
-  renderPriceCards();
   updateTrendItemSelect();
 
-  // Push to Gun sync network — direct call, no patching
+  // Push to Supabase
   if (typeof gunHookAfterSubmit === 'function') gunHookAfterSubmit(entry);
 
-  showPage('home');
+  showPage('home'); // showPage('home') calls renderPriceCards() internally
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2995,21 +3310,93 @@ function clearMyEntries() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// NAVII AVATAR SYSTEM
+// api.navii.dev — deterministic mascot avatars
+// ═══════════════════════════════════════════════════════════
+const NAVII_BASE = 'https://api.navii.dev/avatar/';
+const NAVII_NAMES = [
+  'aria','milo','nova','kai','sage','eden','luna','rio',
+  'pip','wren','zane','iris','fox','jin','leo','pax',
+  'roo','tava','yumi','cass','odi','hex','fae','rune'
+];
+
+// Pick a random avatar name and store it — same user always gets same avatar
+function getOrAssignAvatar() {
+  if (state.user.avatarName && NAVII_NAMES.includes(state.user.avatarName)) {
+    return state.user.avatarName;
+  }
+  // Deterministic pick from user ID so it's consistent across devices
+  const seed = state.user.id || '';
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  const idx = Math.abs(hash) % NAVII_NAMES.length;
+  state.user.avatarName = NAVII_NAMES[idx];
+  saveState();
+  return state.user.avatarName;
+}
+
+function naviiUrl(seed, size = 88, animated = true) {
+  const safeSeed = encodeURIComponent(seed);
+  return `${NAVII_BASE}${safeSeed}?size=${size}${animated ? '&animated=1' : ''}`;
+}
+
+function loadNaviiAvatar() {
+  const avatarName = getOrAssignAvatar();
+  const img = document.getElementById('profileAvatarImg');
+  const initial = document.getElementById('profileInitial');
+  const badge = document.getElementById('avatarNameBadge');
+
+  if (!img) return;
+
+  const url = naviiUrl(avatarName);
+
+  img.classList.add('loading');
+  initial.classList.remove('hidden');
+
+  const tempImg = new Image();
+  tempImg.onload = () => {
+    img.src = url;
+    img.classList.remove('loading');
+    img.classList.add('loaded');
+    initial.classList.add('hidden');
+    if (badge) badge.textContent = avatarName;
+  };
+  tempImg.onerror = () => {
+    // Navii failed — keep initials fallback visible
+    img.classList.add('loading');
+    initial.classList.remove('hidden');
+    if (badge) badge.textContent = '';
+  };
+  tempImg.src = url;
+}
+
+// ═══════════════════════════════════════════════════════════
 // PROFILE PAGE
 // ═══════════════════════════════════════════════════════════
 function renderProfile() {
   const nick = state.user.nickname || 'Anonymous';
-  document.getElementById('profileInitial').textContent = nick.charAt(0).toUpperCase();
+
+  // Update initials fallback
+  const initial = document.getElementById('profileInitial');
+  if (initial) initial.textContent = nick.charAt(0).toUpperCase();
+
   document.getElementById('profileName').textContent = nick;
   document.getElementById('profileSub').textContent = state.user.id;
   if (state.user.nickname) document.getElementById('profileNick').value = state.user.nickname;
 
+  // Load Navii avatar
+  loadNaviiAvatar();
+
+  // Stats
   const mine = state.entries.filter(e => e.user_id === state.user.id);
   document.getElementById('pStatEntries').textContent = mine.length;
   document.getElementById('pStatDistricts').textContent =
     new Set(mine.filter(e => e.district).map(e => e.district)).size;
 
-  // Populate region/district
+  // Location dropdowns
   const pRegion = document.getElementById('profileRegion');
   pRegion.innerHTML = '<option value="">No preference</option>' +
     regions.map(r => `<option value="${r}">${r}</option>`).join('');
@@ -3017,7 +3404,10 @@ function renderProfile() {
     pRegion.value = state.location.region;
     profileRegionChange();
     if (state.location.district) {
-      setTimeout(() => { document.getElementById('profileDistrict').value = state.location.district; }, 50);
+      setTimeout(() => {
+        const pd = document.getElementById('profileDistrict');
+        if (pd) pd.value = state.location.district;
+      }, 50);
     }
   }
 
@@ -3026,6 +3416,9 @@ function renderProfile() {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('on', state.darkMode);
   });
+
+  // Sync counts
+  updateSyncedCount();
 }
 
 function saveNickname() {
@@ -3146,7 +3539,7 @@ function init() {
   });
   window.addEventListener('offline', () => {
     setSyncStatus('offline', 'Offline');
-    setRealtimeStatus('off', 'Offline');
+    setRealtimeStatus('offline', 'Offline');
   });
 }
 
@@ -3162,12 +3555,11 @@ applyDark = function() {
 // SUPABASE BACKEND — Real-time database + sync
 // Credentials obfuscated: split and reversed
 // ═══════════════════════════════════════════════════════════
-const _k = {
-  u: ['oc.ebapabus.qnjlyvnpwpiukqnraossк'.split('').reverse().join('').replace('к',''), 'https://'].reverse().join(''),
-  k: ['2TDJ_A', 'JDE', 'D9LT', '_Apd3z3Nl3', '18KD2D580TI8_7el', 'bahsilbup_bs'].reverse().join('')
-};
-const SB_URL   = _k.u;
-const SB_KEY   = _k.k;
+// Credentials stored as Base64 — not plain text in source
+// Supabase anon key is safe to be in frontend code when RLS is enabled
+const _d = atob;
+const SB_URL   = _d('aHR0cHM6Ly9rc3NvYXJucWt1aXB3dm55bGpucS5zdXBhYmFzZS5jbw==');
+const SB_KEY   = _d('c2JfcHVibGlzaGFibGVfN0RLMkQ1ODBUSTgzMTNsTnozZHBwQV9KREVEOUxUMg==');
 const SB_TABLE = 'price_entries';
 
 // ── State ───────────────────────────────────────────────────
@@ -3175,30 +3567,54 @@ let sbChannel        = null;
 let syncedFromNetwork = 0;
 let sbConnected      = false;
 
-// ── Status UI ───────────────────────────────────────────────
+// ── Sync status label map ────────────────────────────────────
+// status: 'syncing' | 'synced' | 'error' | 'offline'
+// label:  short text shown in the indicator pill
+// Each label maps to a detailed sub-message shown on Profile page
+const SYNC_DETAIL = {
+  // Syncing states
+  'Connecting...':    'Connecting to database — please wait',
+  'Loading...':       'Fetching prices from database...',
+  'Saving...':        'Saving your price to the database...',
+  'Reconnecting...':  'Connection dropped — reconnecting automatically',
+
+  // Synced states
+  'Connected':        'Connected — all prices sync across every device',
+  'Saved':            'Price saved to database successfully',
+  'Live':             'Real-time active — new prices appear instantly',
+
+  // Error states
+  'Network error':    'No network connection — will retry automatically',
+  'Auth error':       'Database auth failed — check Supabase RLS policies',
+  'Save failed':      'Could not save price — stored locally, will retry when online',
+  'Connection error': 'Could not reach the database — retrying',
+
+  // Offline
+  'Offline':          'No internet — prices save locally and sync when you reconnect',
+};
+
 function setSyncStatus(status, label) {
-  ['syncIndicator','profileSyncIndicator'].forEach(id => {
+  // Apply CSS class to all sync indicators in the UI
+  ['syncIndicator', 'profileSyncIndicator'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.className = 'sync-indicator' + (status !== 'offline' ? ' ' + status : '');
+    el.className = 'sync-indicator ' + status; // status maps directly to CSS class
   });
-  ['syncLabel','profileSyncLabel'].forEach(id => {
+
+  // Update label text in all indicators
+  ['syncLabel', 'profileSyncLabel'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = label;
   });
+
+  // Update detailed sub-message on Profile page
   const sub = document.getElementById('profileSyncStatus');
-  const msgs = {
-    syncing: 'Connecting to database...',
-    synced:  'Connected — all prices sync across every device',
-    error:   'Connection issue — will retry',
-    offline: 'No network — using local data only'
-  };
-  if (sub) sub.textContent = msgs[status] || '';
+  if (sub) sub.textContent = SYNC_DETAIL[label] || label;
 }
 
 function setRealtimeStatus(status, label) {
   const el = document.getElementById('realtimeIndicator');
-  if (el) el.className = 'sync-indicator' + (status === 'synced' ? ' synced' : status === 'error' ? ' error' : '');
+  if (el) el.className = 'sync-indicator ' + status;
   const lbl = document.getElementById('realtimeLabel');
   if (lbl) lbl.textContent = label;
 }
@@ -3225,29 +3641,120 @@ function refreshActivePageUI() {
   const id = active.id;
   if (id === 'page-home')   { renderPriceCards(); return; }
   if (id === 'page-search') { doSearch(); return; }
+  if (id === 'page-cart')   { renderCart(); return; }
   if (id === 'page-trends') {
     updateInsights(); updateLeaderboard();
     updateTrendChart(); updateCompChart(); return;
   }
   if (id === 'page-recent') { renderRecent(); return; }
+  // log and profile don't need live refresh
+}
+
+// ── Validate Supabase config on startup ─────────────────────
+function validateSbConfig() {
+  const urlOk  = SB_URL.startsWith('https://') && SB_URL.includes('.supabase.co');
+  const keyOk  = SB_KEY.length > 20;
+  if (!urlOk) console.error('[PriceCh3ck] Supabase URL looks wrong:', SB_URL);
+  if (!keyOk) console.error('[PriceCh3ck] Supabase key looks wrong — too short');
+  return urlOk && keyOk;
+}
+
+// ── Better error classifier ──────────────────────────────────
+function classifyFetchError(e) {
+  if (!e) return { label: 'Connection error', detail: 'Unknown error' };
+
+  const msg = e.message || String(e);
+
+  if (msg.includes('Failed to fetch') || e.name === 'TypeError') {
+    // Most common cause: CORS blocked, network down, or wrong URL
+    return {
+      label: 'Network error',
+      detail: 'Cannot reach Supabase — check your internet connection or Supabase project URL'
+    };
+  }
+  if (msg.includes('auth') || msg.includes('401') || msg.includes('403')) {
+    return {
+      label: 'Auth error',
+      detail: 'Supabase rejected the request — check your anon key and RLS policies'
+    };
+  }
+  if (msg.includes('timeout') || msg.includes('AbortError')) {
+    return {
+      label: 'Network error',
+      detail: 'Request timed out — Supabase may be slow or unreachable'
+    };
+  }
+  return {
+    label: 'Connection error',
+    detail: msg.substring(0, 120)
+  };
 }
 
 // ── Fetch helper ────────────────────────────────────────────
 async function sbFetch(path, opts = {}) {
   const url = path.startsWith('http') ? path : `${SB_URL}/rest/v1/${path}`;
-  const res = await fetch(url, {
-    ...opts,
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json',
-      ...(opts.prefer ? { 'Prefer': opts.prefer } : {}),
-      ...(opts.headers || {})
+  let lastError;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(r => setTimeout(r, 1500 * attempt));
+        setSyncStatus('syncing', 'Reconnecting...');
+      }
+
+      const res = await fetch(url, {
+        ...opts,
+        headers: {
+          'apikey':        SB_KEY,
+          'Authorization': `Bearer ${SB_KEY}`,
+          'Content-Type':  'application/json',
+          ...(opts.prefer ? { 'Prefer': opts.prefer } : {}),
+          ...(opts.headers || {})
+        }
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        let msg = `HTTP ${res.status}`;
+        try {
+          const parsed = JSON.parse(body);
+          msg = parsed.message || parsed.error || parsed.hint || msg;
+        } catch(_) {}
+
+        if (res.status === 409) return null;  // duplicate insert — silent
+
+        if (res.status === 401 || res.status === 403) {
+          setSyncStatus('error', 'Auth error');
+          throw new Error(`auth:${msg}`);
+        }
+
+        if (res.status >= 500) {
+          // Server error — worth retrying
+          lastError = new Error(`server:${res.status}:${msg}`);
+          continue;
+        }
+
+        throw new Error(`${res.status}:${msg}`);
+      }
+
+      if (res.status === 204) return null;
+      return res.json();
+
+    } catch(e) {
+      lastError = e;
+      // TypeError = network failure (CORS, offline, DNS) — retry
+      if (e.name === 'TypeError' || e.name === 'NetworkError') {
+        const { label } = classifyFetchError(e);
+        setSyncStatus('error', label);
+        if (attempt < 1) continue;
+      }
+      // Auth errors — don't retry
+      if (e.message?.startsWith('auth:')) throw e;
+      // Other errors — don't retry
+      if (attempt === 0 && e.name !== 'TypeError') throw e;
     }
-  });
-  if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
-  if (res.status === 204) return null;
-  return res.json();
+  }
+  throw lastError;
 }
 
 // ── Normalise DB row → app entry ────────────────────────────
@@ -3277,15 +3784,20 @@ async function sbLoadAllEntries() {
       `${SB_TABLE}?select=*&order=created_at.asc&limit=10000`,
       { headers: { 'Range': '0-9999' } }
     );
+
     if (!data || !data.length) {
-      setSyncStatus('synced', 'Connected'); sbConnected = true; return;
+      setSyncStatus('synced', 'Connected');
+      sbConnected = true;
+      return;
     }
+
     let added = 0;
     data.forEach(row => {
       if (!row.id || state.entries.find(e => e.id === row.id)) return;
       state.entries.push(normaliseEntry(row));
       added++;
     });
+
     if (added > 0) {
       syncedFromNetwork += added;
       saveState();
@@ -3294,11 +3806,22 @@ async function sbLoadAllEntries() {
       updateSyncedCount();
       showSyncBanner(`${added} price${added === 1 ? '' : 's'} loaded from database`);
     }
+
     setSyncStatus('synced', 'Connected');
     sbConnected = true;
+
   } catch(e) {
-    console.warn('sbLoad error:', e);
-    setSyncStatus('error', 'Error');
+    const { label, detail } = classifyFetchError(e);
+    console.warn(`[PriceCh3ck] sbLoadAllEntries failed — ${detail}`);
+    setSyncStatus('error', label);
+
+    // Schedule a retry in 15s — user may have just connected
+    setTimeout(async () => {
+      if (navigator.onLine && !sbConnected) {
+        console.info('[PriceCh3ck] Retrying sbLoadAllEntries...');
+        await sbLoadAllEntries();
+      }
+    }, 15000);
   }
 }
 
@@ -3326,36 +3849,64 @@ async function sbPushEntry(entry) {
     entry._synced = true;
     saveState();
     setSyncStatus('synced', 'Saved');
+
   } catch(e) {
-    console.warn('sbPush error:', e);
-    setSyncStatus('error', 'Save failed');
+    const { label, detail } = classifyFetchError(e);
+    console.warn(`[PriceCh3ck] sbPushEntry failed — ${detail}`);
+    setSyncStatus('error', label === 'Auth error' ? 'Auth error' : 'Save failed');
     toast('Saved locally', 'Will sync when back online', 'warning', 3000);
   }
 }
 
 // ── Real-time subscription ──────────────────────────────────
+let _wsRetryCount = 0;
+const _wsMaxRetries = 10;
+const _wsRetryBase  = 3000; // starts at 3s, doubles each attempt up to ~90s
+
 function sbSubscribeRealtime() {
   const wsUrl = SB_URL.replace('https://', 'wss://').replace('http://', 'ws://');
   let ws;
+
   try {
-    ws = new WebSocket(`${wsUrl}/realtime/v1/websocket?apikey=${SB_KEY}&vsn=1.0.0`);
-  } catch(e) { setRealtimeStatus('error', 'Error'); return; }
+    ws = new WebSocket(
+      `${wsUrl}/realtime/v1/websocket?apikey=${SB_KEY}&vsn=1.0.0`
+    );
+  } catch(e) {
+    console.warn('[PriceCh3ck] WebSocket construction failed:', e.message);
+    setRealtimeStatus('error', 'Connection error');
+    _scheduleWsRetry();
+    return;
+  }
 
   let heartbeat = null;
 
   ws.onopen = () => {
+    _wsRetryCount = 0; // reset backoff on success
     setRealtimeStatus('synced', 'Live');
-    // Join the realtime channel for INSERT events on price_entries
+
     ws.send(JSON.stringify({
-      topic:   `realtime:public:${SB_TABLE}`,
+      topic:   'realtime:pricech3ck',
       event:   'phx_join',
-      payload: { config: { broadcast: { self: false } } },
-      ref:     '1'
+      payload: {
+        config: {
+          broadcast:        { self: false },
+          presence:         { key: '' },
+          postgres_changes: [{
+            event:  'INSERT',
+            schema: 'public',
+            table:  SB_TABLE
+          }]
+        }
+      },
+      ref: '1'
     }));
-    // Keepalive every 25s
+
     heartbeat = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: null }));
+        ws.send(JSON.stringify({
+          topic: 'phoenix', event: 'heartbeat',
+          payload: {}, ref: null
+        }));
       }
     }, 25000);
   };
@@ -3363,38 +3914,82 @@ function sbSubscribeRealtime() {
   ws.onmessage = ({ data }) => {
     try {
       const msg = JSON.parse(data);
-      if (msg.event !== 'INSERT' || !msg.payload?.record) return;
-      const row = msg.payload.record;
-      if (row.user_id === state.user.id) return;         // own entry — skip
-      if (state.entries.find(e => e.id === row.id)) return; // duplicate — skip
-      const entry = normaliseEntry(row);
+
+      const isInsert = (
+        msg.event === 'INSERT' ||
+        (msg.event === 'postgres_changes' && msg.payload?.data?.type === 'INSERT')
+      );
+      const record = msg.payload?.record || msg.payload?.data?.record;
+
+      if (!isInsert || !record) return;
+
+      if (record.user_id === state.user.id) return;
+      if (state.entries.find(e => e.id === record.id)) return;
+
+      const entry = normaliseEntry(record);
       state.entries.push(entry);
       syncedFromNetwork++;
       saveState();
       refreshActivePageUI();
       updateTrendItemSelect();
       updateSyncedCount();
+      pulseTribar();
+
       clearTimeout(window._rtDebounce);
       window._rtDebounce = setTimeout(() => {
-        showSyncBanner(`New price — ${entry.item_name} in ${entry.district || entry.region}`);
+        showSyncBanner(
+          `New price — ${entry.item_name} in ${entry.district || entry.region || 'Ghana'}`
+        );
       }, 400);
-    } catch(e) {}
+
+    } catch(e) {
+      // Parse error in message — log message type if available, not the whole event
+      console.warn('[PriceCh3ck] Realtime message parse error:', e.message);
+    }
   };
 
-  ws.onclose = () => {
+  ws.onclose = (event) => {
     clearInterval(heartbeat);
-    setRealtimeStatus('error', 'Reconnecting...');
-    setTimeout(sbSubscribeRealtime, 5000); // auto-reconnect
+    heartbeat = null;
+    // code 1000 = deliberate close, 1001 = going away — don't retry
+    if (event.code === 1000 || event.code === 1001) return;
+    const reason = event.reason || `code ${event.code}`;
+    console.info(`[PriceCh3ck] WebSocket closed (${reason}) — will reconnect`);
+    setRealtimeStatus('syncing', 'Reconnecting...');
+    _scheduleWsRetry();
   };
 
-  ws.onerror = () => setRealtimeStatus('error', 'Error');
+  ws.onerror = (event) => {
+    // event is a DOM Event — extract useful info instead of logging [object Event]
+    const target = event.target;
+    const detail = target
+      ? `readyState=${target.readyState}, url=${target.url?.substring(0,60)}`
+      : 'no detail';
+    console.warn(`[PriceCh3ck] WebSocket error — ${detail}`);
+    setRealtimeStatus('error', 'Connection error');
+    // onclose fires after onerror — retry handled there
+  };
+
   sbChannel = ws;
+}
+
+function _scheduleWsRetry() {
+  if (_wsRetryCount >= _wsMaxRetries) {
+    console.warn('[PriceCh3ck] WebSocket max retries reached — giving up');
+    setRealtimeStatus('error', 'Connection error');
+    return;
+  }
+  const delay = Math.min(_wsRetryBase * Math.pow(1.8, _wsRetryCount), 90000);
+  _wsRetryCount++;
+  console.info(`[PriceCh3ck] Retrying WebSocket in ${Math.round(delay/1000)}s (attempt ${_wsRetryCount})`);
+  setTimeout(sbSubscribeRealtime, delay);
 }
 
 // ── Sync offline-saved entries ──────────────────────────────
 async function sbSyncPending() {
   const pending = state.entries.filter(e => !e._synced && e.user_id === state.user.id);
   if (!pending.length) return;
+  console.info(`[PriceCh3ck] Syncing ${pending.length} offline entries...`);
   for (const entry of pending) {
     try { await sbPushEntry(entry); } catch(e) {}
   }
@@ -3403,13 +3998,22 @@ async function sbSyncPending() {
 // ── Hook called from inside submitPrice ─────────────────────
 function gunHookAfterSubmit(entry) {
   if (entry && navigator.onLine) sbPushEntry(entry);
+  else if (entry && !navigator.onLine) {
+    // Already saved locally with _synced=false — sbSyncPending handles it on reconnect
+    toast('Saved locally', 'Will sync when back online', 'warning', 3000);
+  }
 }
 
 // ── Init ────────────────────────────────────────────────────
 async function initSupabase() {
+  if (!validateSbConfig()) {
+    setSyncStatus('error', 'Auth error');
+    setRealtimeStatus('error', 'Connection error');
+    return;
+  }
   if (!navigator.onLine) {
     setSyncStatus('offline', 'Offline');
-    setRealtimeStatus('off', 'Offline');
+    setRealtimeStatus('offline', 'Offline');
     return;
   }
   await sbLoadAllEntries();
