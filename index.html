@@ -372,7 +372,68 @@ a { color: inherit; text-decoration: none; }
 
 /* ── SEARCH ────────────────────────────────────────────────── */
 .search-wrap { padding: var(--s3) var(--s5) var(--s2); }
-.search-box {
+
+/* Search input wrapper — home page uses .search-box, search page uses .search-input-wrap */
+.search-input-wrap {
+  display: flex; align-items: center; gap: var(--s3);
+  background: var(--surface);
+  border-radius: var(--r5);
+  padding: 0 var(--s4);
+  border: 1.5px solid var(--line);
+  transition: all var(--dur) var(--ease);
+}
+.search-input-wrap:focus-within {
+  border-color: var(--gh-green);
+  background: var(--bg);
+  box-shadow: 0 0 0 4px var(--green-light);
+}
+.search-input-wrap svg { color: var(--text-3); flex-shrink: 0; }
+
+/* Filter row below search */
+.search-filters {
+  display: flex; gap: var(--s2);
+  padding: var(--s2) var(--s5) var(--s3);
+  overflow-x: auto; scrollbar-width: none;
+}
+.search-filters::-webkit-scrollbar { display: none; }
+.filter-select {
+  flex-shrink: 0;
+  padding: 8px var(--s4);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r6);
+  font-size: 0.8rem; font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  /* Custom arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.filter-select:focus {
+  border-color: var(--gh-green);
+  box-shadow: 0 0 0 4px var(--green-light);
+  outline: none;
+}
+
+/* Search results */
+.search-results { padding: 0 var(--s5); }
+.search-results-title {
+  font-size: 0.82rem; color: var(--text-3);
+  padding: var(--s3) 0 var(--s4);
+  text-align: center;
+}
+
+/* Chart card title (trends page) */
+.chart-card-title {
+  font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-3); margin-bottom: var(--s3);
+}
   display: flex; align-items: center; gap: var(--s3);
   background: var(--surface);
   border-radius: var(--r5);
@@ -835,11 +896,13 @@ a { color: inherit; text-decoration: none; }
   background: var(--surface);
   margin-bottom: var(--s5);
   position: relative; overflow: hidden;
-  position: relative; overflow: hidden;
 }
 .form-hero h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
 .form-hero p  { font-size: 0.82rem; color: var(--text-2); margin-top: 4px; }
 .form-hero .form-twi { font-style: italic; font-size: 0.75rem; color: var(--text-3); margin-top: var(--s2); }
+
+/* .subtitle — used in hero sections across pages */
+.subtitle { font-size: 0.82rem; color: var(--text-2); margin-top: 4px; line-height: 1.6; }
 
 .form-group { margin-bottom: var(--s5); }
 .form-label {
@@ -1281,6 +1344,14 @@ a { color: inherit; text-decoration: none; }
   width: 36px; height: 4px;
   background: var(--line-2); border-radius: 2px;
   margin: 0 auto var(--s4);
+  cursor: grab;
+  transition: background 200ms ease, width 200ms ease;
+}
+.sheet-handle:active { cursor: grabbing; }
+/* Expands handle when drag starts */
+.sheet.dragging .sheet-handle {
+  background: var(--gh-green);
+  width: 48px;
 }
 .sheet-title {
   font-size: 1.1rem; font-weight: 700;
@@ -1738,7 +1809,7 @@ a { color: inherit; text-decoration: none; }
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="setup-nickname">Nickname <span style="color:var(--text-tertiary);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <label class="form-label" for="setup-nickname">Nickname <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
           <input type="text" class="form-input" id="setup-nickname" placeholder="e.g. Ama Accra" maxlength="30"/>
         </div>
       </div>
@@ -1778,7 +1849,7 @@ a { color: inherit; text-decoration: none; }
     </div>
   </div>
   <nav class="sidebar-nav">
-    <button class="sidebar-nav-item active" onclick="showPage('home')" data-page="home">
+    <button class="sidebar-nav-item" onclick="showPage('home')" data-page="home">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Price Board
     </button>
@@ -1809,12 +1880,12 @@ a { color: inherit; text-decoration: none; }
   </nav>
   <div class="sidebar-footer">
     <div style="display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:0.78rem;color:var(--text-tertiary)">Dark mode</span>
+      <span style="font-size:0.78rem;color:var(--text-3)">Dark mode</span>
       <div class="toggle-switch" id="darkToggleSidebar" onclick="toggleDark()" style="cursor:pointer">
         <div class="toggle-knob"></div>
       </div>
     </div>
-    <div style="margin-top:16px;font-size:0.72rem;color:var(--text-tertiary);line-height:1.6">
+    <div style="margin-top:16px;font-size:0.72rem;color:var(--text-3);line-height:1.6">
       Built for Ghana 🇬🇭<br/>by the community
     </div>
   </div>
@@ -1849,7 +1920,7 @@ a { color: inherit; text-decoration: none; }
   </header>
 
   <!-- ═══════════════ HOME PAGE ═══════════════ -->
-  <section class="page active" id="page-home" aria-label="Price board">
+  <section class="page" id="page-home" aria-label="Price board">
     <!-- Location banner -->
     <div class="location-banner">
       <div class="location-left">
@@ -1963,11 +2034,11 @@ a { color: inherit; text-decoration: none; }
   <!-- ═══════════════ LOG PRICE PAGE ═══════════════ -->
   <section class="page" id="page-log" role="main" aria-label="Log a price">
     <div class="form-page">
-      <div style="position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:24px 20px 20px;background:var(--surface);margin-bottom:24px;border:1px solid var(--border)">
+      <div class="form-hero">
         <div class="adinkra-bg"></div>
-        <h1 style="position:relative">Log a Price</h1>
-        <p class="subtitle" style="position:relative">Share what you paid. Help your community.</p>
-        <p style="position:relative;font-size:0.78rem;font-style:italic;color:var(--text-tertiary)">"Onipa na ohia onipa" — A person needs a person</p>
+        <h1>Log a Price</h1>
+        <p class="subtitle">Share what you paid. Help your community.</p>
+        <p class="form-twi">"Onipa na ohia onipa" — A person needs a person</p>
       </div>
 
       <!-- Item name -->
@@ -2071,7 +2142,7 @@ a { color: inherit; text-decoration: none; }
 
       <!-- Note -->
       <div class="form-group">
-        <label class="form-label" for="logNote">Note <span style="color:var(--text-tertiary);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <label class="form-label" for="logNote">Note <span style="color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
         <input type="text" class="form-input" id="logNote" placeholder="e.g. Price went up since last month..." maxlength="120"/>
       </div>
 
@@ -2095,10 +2166,10 @@ a { color: inherit; text-decoration: none; }
   <!-- ═══════════════ CART PAGE ═══════════════ -->
   <section class="page" id="page-cart" role="main" aria-label="Shopping cart estimator">
     <div class="cart-page">
-      <div style="position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:20px;background:var(--surface);margin-bottom:20px;border:1px solid var(--border)">
+      <div class="cart-hero">
         <div class="adinkra-bg"></div>
-        <h1 style="position:relative">Cart Estimator</h1>
-        <p class="subtitle" style="position:relative;margin-bottom:0">Know your expected total before you go to market.</p>
+        <h1>Cart Estimator</h1>
+        <p class="subtitle">Know your expected total before you go to market.</p>
       </div>
 
       <!-- Add item to cart -->
@@ -2163,10 +2234,10 @@ a { color: inherit; text-decoration: none; }
   <!-- ═══════════════ TRENDS PAGE ═══════════════ -->
   <section class="page" id="page-trends" role="main" aria-label="Price trends">
     <div class="trends-page">
-      <div style="position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:20px;background:var(--surface);margin-bottom:20px;border:1px solid var(--border)">
+      <div class="trends-hero">
         <div class="adinkra-bg"></div>
-        <h1 style="position:relative">Trends</h1>
-        <p class="subtitle" style="position:relative;margin-bottom:0">Price insights across Ghana</p>
+        <h1>Trends</h1>
+        <p class="subtitle">Price insights across Ghana</p>
       </div>
 
       <!-- Insights -->
@@ -2358,7 +2429,7 @@ a { color: inherit; text-decoration: none; }
       </div>
 
       <div style="text-align:center;padding:12px 0 32px">
-        <div style="font-size:0.7rem;color:var(--text-tertiary);line-height:1.9">
+        <div style="font-size:0.7rem;color:var(--text-3);line-height:1.9">
           PriceCh3ck GH · v1.0.0<br/>
           Built for Ghana by the community,<br/>for the community
         </div>
@@ -2371,7 +2442,7 @@ a { color: inherit; text-decoration: none; }
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-  <button class="nav-item active" id="nav-home" onclick="showPage('home')" aria-label="Price board" aria-current="page">
+  <button class="nav-item" id="nav-home" onclick="showPage('home')" aria-label="Price board">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Prices</span>
   </button>
@@ -2972,24 +3043,42 @@ function aggregateByItem(entries) {
   });
   return Object.values(map).map(item => {
     const prices = item.prices;
-    const avg = trimmedMean(prices);  // trimmed mean — outliers excluded
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const sorted = [...prices];
+    const avg    = trimmedMean(prices);
+    const min    = Math.min(...prices);
+    const max    = Math.max(...prices);
+
+    // Sort chronologically for accurate trend + % change
+    const paired = prices.map((p,i) => ({ p, d: item.dates[i] }))
+      .sort((a,b) => a.d - b.d);
+    const sorted = paired.map(x => x.p);
+
+    const first = sorted[0];
+    const last  = sorted[sorted.length - 1];
     const trend = sorted.length > 1
-      ? (sorted[sorted.length-1] > sorted[0] ? 'up' : sorted[sorted.length-1] < sorted[0] ? 'down' : 'stable')
+      ? (last > first ? 'up' : last < first ? 'down' : 'stable')
       : 'stable';
-    return { ...item, avg, min, max, count: prices.length, trend };
+
+    // % change from first logged to most recent
+    const changePct = sorted.length > 1 && first > 0
+      ? Math.round(((last - first) / first) * 100)
+      : 0;
+
+    return { ...item, avg, min, max, count: prices.length, trend, changePct, first, last };
   });
 }
 
-const ADINKRA_SVG = `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="card-adinkra" aria-hidden="true"><circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="8" stroke="currentColor" stroke-width="1"/><path d="M24 8 C18 14 18 34 24 40" stroke="currentColor" stroke-width="1.5"/><path d="M24 8 C30 14 30 34 24 40" stroke="currentColor" stroke-width="1.5"/></svg>`;
-
-function trendBadge(trend) {
-  if (trend==='up') return `<span class="trend-badge trend-up"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>Rising</span>`;
-  if (trend==='down') return `<span class="trend-badge trend-down"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>Falling</span>`;
+function trendBadge(trend, changePct) {
+  const pctStr = changePct && changePct !== 0
+    ? ` ${changePct > 0 ? '+' : ''}${changePct}%`
+    : '';
+  if (trend==='up')
+    return `<span class="trend-badge trend-up"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>Rising${pctStr}</span>`;
+  if (trend==='down')
+    return `<span class="trend-badge trend-down"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>Falling${pctStr}</span>`;
   return `<span class="trend-badge trend-stable"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>Stable</span>`;
 }
+
+const ADINKRA_SVG = `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="card-adinkra" aria-hidden="true"><circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="8" stroke="currentColor" stroke-width="1"/><path d="M24 8 C18 14 18 34 24 40" stroke="currentColor" stroke-width="1.5"/><path d="M24 8 C30 14 30 34 24 40" stroke="currentColor" stroke-width="1.5"/></svg>`;
 
 // ── Skeleton loader ──────────────────────────────────────────
 function showSkeletonCards(container, count = 6) {
@@ -3076,7 +3165,7 @@ function renderPriceCards() {
       ${ADINKRA_SVG}
       <div class="card-top">
         <div class="card-cat-icon">${CAT_ICONS[item.category]||CAT_ICONS.other}</div>
-        ${trendBadge(item.trend)}
+        ${trendBadge(item.trend, item.changePct)}
       </div>
       <div class="card-item-name">${item.item_name}</div>
       <div class="card-price">GH₵${item.avg.toFixed(2)} <small>${item.unit}</small></div>
@@ -3464,7 +3553,7 @@ function doSearch() {
       ${ADINKRA_SVG}
       <div class="card-top">
         <div class="card-cat-icon">${CAT_ICONS[item.category]||CAT_ICONS.other}</div>
-        ${trendBadge(item.trend)}
+        ${trendBadge(item.trend, item.changePct)}
       </div>
       <div class="card-item-name">${item.item_name}</div>
       <div class="card-price">GH₵ <span style="font-size:inherit;font-weight:inherit;color:inherit">${item.avg.toFixed(2)}</span> <span>${item.unit}</span></div>
@@ -3519,21 +3608,44 @@ function updateTrendChart() {
       datasets:[{
         label:`GH₵ ${item}`,
         data,
-        borderColor:'#008751',
-        backgroundColor:'rgba(0,135,81,0.08)',
+        borderColor:'#00875A',
+        backgroundColor:'rgba(0,135,90,0.08)',
         fill:true,
         tension:0.4,
-        pointBackgroundColor:'#008751',
-        pointRadius:4,
-        pointHoverRadius:6
+        pointBackgroundColor:'#00875A',
+        pointRadius: data.length > 15 ? 2 : 4,
+        pointHoverRadius:7,
+        pointHoverBackgroundColor:'#00875A',
+        pointHoverBorderColor:'#fff',
+        pointHoverBorderWidth:2,
       }]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>`GH₵ ${c.raw.toFixed(2)}`}}},
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction: { mode:'index', intersect:false },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled:true,
+          backgroundColor:'rgba(10,10,10,0.92)',
+          titleColor:'#fff',
+          bodyColor:'#A1A1AA',
+          padding:12,
+          cornerRadius:10,
+          displayColors:false,
+          callbacks:{
+            title: ctx => {
+              const e = entries[ctx[0].dataIndex];
+              return e ? `${e.date_logged} · ${e.market_shop || e.district || 'Ghana'}` : '';
+            },
+            label: ctx => `GH₵ ${ctx.raw.toFixed(2)}`
+          }
+        }
+      },
       scales:{
-        x:{ticks:{color:cd.tickColor,font:{family:'DM Sans',size:10}},grid:{color:cd.gridColor}},
-        y:{ticks:{color:cd.tickColor,font:{family:'DM Sans',size:10},callback:(v)=>`GH₵${v}`},grid:{color:cd.gridColor}}
+        x:{ticks:{color:cd.tickColor,font:{family:'Inter',size:10},maxTicksLimit:6},grid:{color:cd.gridColor}},
+        y:{ticks:{color:cd.tickColor,font:{family:'Inter',size:10},callback:v=>`GH₵${v}`},grid:{color:cd.gridColor}}
       }
     }
   });
@@ -3567,11 +3679,27 @@ function updateCompChart() {
       }]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>`GH₵ ${c.raw.toFixed(2)}`}}},
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(10,10,10,0.92)',
+          titleColor:'#fff',
+          bodyColor:'#A1A1AA',
+          padding:12,
+          cornerRadius:10,
+          displayColors:false,
+          callbacks:{
+            title: ctx => districts[ctx[0].dataIndex] || '',
+            label: ctx => `Avg: GH₵${ctx.raw.toFixed(2)}`
+          }
+        }
+      },
       scales:{
-        x:{ticks:{color:cd.tickColor,font:{family:'DM Sans',size:10}},grid:{display:false}},
-        y:{ticks:{color:cd.tickColor,font:{family:'DM Sans',size:10},callback:(v)=>`GH₵${v}`},grid:{color:cd.gridColor}}
+        x:{ticks:{color:cd.tickColor,font:{family:'Inter',size:10}},grid:{display:false}},
+        y:{ticks:{color:cd.tickColor,font:{family:'Inter',size:10},callback:v=>`GH₵${v}`},grid:{color:cd.gridColor}}
       }
     }
   });
@@ -3587,7 +3715,7 @@ function updateLeaderboard() {
   const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
   if (!sorted.length) {
-    lb.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-tertiary);font-size:0.85rem">No data yet — start logging prices!</div>';
+    lb.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-3);font-size:0.85rem">No data yet — start logging prices!</div>';
     return;
   }
 
@@ -3693,7 +3821,7 @@ function renderRecent() {
           <span>${e.unit}</span>
           ${e.market_shop ? `<span>${e.market_shop}</span>` : ''}
         </div>
-        ${e.note ? `<div style="font-size:0.72rem;color:var(--text-tertiary);font-style:italic;margin-top:4px">${e.note}</div>` : ''}
+        ${e.note ? `<div style="font-size:0.72rem;color:var(--text-3);font-style:italic;margin-top:4px">${e.note}</div>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
         <div class="entry-price">GH₵${e.price_ghs.toFixed(2)}</div>
@@ -3902,6 +4030,11 @@ function init() {
 
   if (state.onboarded) {
     document.getElementById('onboarding').classList.add('hidden');
+    // Set home as active page on load
+    document.getElementById('page-home').classList.add('active');
+    document.getElementById('nav-home')?.classList.add('active');
+    const sideHome = document.querySelector('.sidebar-nav-item[data-page="home"]');
+    if (sideHome) sideHome.classList.add('active');
     renderPriceCards();
   } else {
     document.getElementById('setup-region').innerHTML = '<option value="">Select region...</option>' +
@@ -3956,6 +4089,12 @@ function init() {
     setSyncStatus('offline', 'Offline');
     setRealtimeStatus('offline', 'Offline');
   });
+
+  // Swipe-to-dismiss on all sheets
+  initSwipeToDismiss();
+
+  // Resolve deep link from URL hash (e.g. shared item link)
+  resolveDeepLink();
 }
 
 // Patch applyDark to also sync profile toggle
@@ -4502,51 +4641,82 @@ function renderDetailChart(entries) {
   if (_detailChart) { _detailChart.destroy(); _detailChart = null; }
 
   const isDark = state.darkMode;
-  const textColor = isDark ? '#71717A' : '#888888';
-  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const textColor  = isDark ? '#71717A' : '#888888';
+  const gridColor  = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+  const prices = entries.map(e => e.price_ghs);
+  const minP   = Math.min(...prices);
+  const maxP   = Math.max(...prices);
 
   const labels = entries.map(e => {
     const d = new Date(e.date_logged);
     return `${d.getDate()}/${d.getMonth()+1}`;
   });
 
+  // Point colours — highlight min (green) and max (red) price
+  const pointColors = prices.map(p =>
+    p === minP ? '#00875A' : p === maxP ? '#D0021B' : '#00875A'
+  );
+  const pointRadii = prices.map(p =>
+    (p === minP || p === maxP) ? 6 : (entries.length > 10 ? 2 : 4)
+  );
+
   _detailChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        data: entries.map(e => e.price_ghs),
+        data: prices,
         borderColor: '#00875A',
-        backgroundColor: 'rgba(0,135,90,0.08)',
+        backgroundColor: 'rgba(0,135,90,0.07)',
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#00875A',
-        pointRadius: entries.length > 10 ? 2 : 4,
-        pointHoverRadius: 6,
+        pointBackgroundColor: pointColors,
+        pointRadius: pointRadii,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: pointColors,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
         tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(10,10,10,0.92)',
+          titleColor: '#fff',
+          bodyColor: '#A1A1AA',
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: false,
           callbacks: {
-            label: ctx => `GH₵${ctx.raw.toFixed(2)}`,
-            title: ctx => `${entries[ctx[0].dataIndex].date_logged} · ${entries[ctx[0].dataIndex].market_shop || entries[ctx[0].dataIndex].district || 'Ghana'}`
+            title: ctx => {
+              const e = entries[ctx[0].dataIndex];
+              return e ? `${e.date_logged}${e.market_shop ? ' · ' + e.market_shop : ''}` : '';
+            },
+            label: ctx => {
+              const p   = ctx.raw;
+              const tag = p === minP ? ' ↓ Lowest' : p === maxP ? ' ↑ Highest' : '';
+              return `GH₵${p.toFixed(2)}${tag}`;
+            },
+            afterLabel: ctx => {
+              const e = entries[ctx.dataIndex];
+              return e && e.district ? `📍 ${e.district}` : '';
+            }
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: textColor, font: { size: 10 }, maxTicksLimit: 6 },
+          ticks: { color: textColor, font: { family: 'Inter', size: 10 }, maxTicksLimit: 6 },
           grid: { color: gridColor }
         },
         y: {
-          ticks: {
-            color: textColor, font: { size: 10 },
-            callback: v => `GH₵${v}`
-          },
+          ticks: { color: textColor, font: { family: 'Inter', size: 10 }, callback: v => `GH₵${v}` },
           grid: { color: gridColor }
         }
       }
@@ -4667,7 +4837,7 @@ function submitDetailQuickLog() {
 
 // Active share payload — set by openShareSheet
 let _sharePayload = null;
-const APP_URL = 'https://uxderrick.github.io/pricech3ck-gh/'; // update to your GitHub Pages URL
+const APP_URL = 'https://ja-creates.github.io/Price-check-demo/';
 
 // ── Build share message ──────────────────────────────────────
 function buildShareMessage(type, data) {
@@ -4683,6 +4853,10 @@ function buildShareMessage(type, data) {
 
     const location = [data.district, data.region].filter(Boolean).join(', ') || 'Ghana';
 
+    // Build deep link — opens app directly to this item's detail
+    const slug = encodeURIComponent(data.item.toLowerCase().replace(/\s+/g,'-'));
+    const deepLink = `${APP_URL}#item=${slug}`;
+
     return [
       `${flag} *PriceCh3ck GH* ${flag}`,
       ``,
@@ -4694,7 +4868,7 @@ function buildShareMessage(type, data) {
       ``,
       line,
       `Know your prices. Protect your money.`,
-      `Check prices near you 👉 ${APP_URL}`,
+      `See full price history 👉 ${deepLink}`,
     ].join('\n');
   }
 
@@ -4903,6 +5077,211 @@ async function shareAppInvite(method) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// OVERLAY & SHEET SYSTEM
+// bgClose, swipe-to-dismiss, back button support
+// ═══════════════════════════════════════════════════════════
+
+// ── All overlay IDs in the app ───────────────────────────────
+const OVERLAYS = [
+  'cardDetailOverlay',
+  'shareOverlay',
+  'quickLogOverlay',
+  'locationOverlay',
+];
+
+// ── bgClose — close overlay if user tapped the backdrop ─────
+function bgClose(event, overlayId) {
+  if (event.target === event.currentTarget) {
+    closeOverlay(overlayId);
+  }
+}
+
+// Also wire locationOverlay (was using a different function name)
+function closeIfBg(event, overlayId) {
+  bgClose(event, overlayId);
+}
+
+// ── Close any overlay by ID ──────────────────────────────────
+function closeOverlay(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const sheet = el.querySelector('.sheet');
+  if (sheet) {
+    sheet.style.transition = 'transform 300ms cubic-bezier(0.4,0,1,1)';
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      el.classList.remove('open');
+      sheet.style.transform = '';
+      sheet.style.transition = '';
+    }, 300);
+  } else {
+    el.classList.remove('open');
+  }
+  // Pop history state so back button doesn't navigate app away
+  if (history.state && history.state.overlay === id) {
+    history.back();
+  }
+}
+
+// Convenience wrappers
+function closeQuickLog()  { closeOverlay('quickLogOverlay'); }
+function closeShareSheet(){ closeOverlay('shareOverlay'); }
+function closeCardDetail(){ closeOverlay('cardDetailOverlay'); }
+function closeLocation()  { closeOverlay('locationOverlay'); }
+
+// ── Push a history state whenever an overlay opens ───────────
+function overlayPushState(id) {
+  history.pushState({ overlay: id }, '', window.location.href);
+}
+
+// Patch all overlay opens to push state
+const _origOpenCardDetail = openCardDetail;
+openCardDetail = function(itemName) {
+  _origOpenCardDetail(itemName);
+  overlayPushState('cardDetailOverlay');
+  // Also update URL hash for deep linking
+  const slug = encodeURIComponent(itemName.toLowerCase().replace(/\s+/g,'-'));
+  history.replaceState({ overlay: 'cardDetailOverlay', item: itemName }, '',
+    window.location.pathname + '#item=' + slug);
+};
+
+const _origOpenShareSheet = openShareSheet;
+openShareSheet = function(itemName, price, unit, trend, count) {
+  _origOpenShareSheet(itemName, price, unit, trend, count);
+  overlayPushState('shareOverlay');
+};
+
+const _origOpenQuickLog = openQuickLog;
+openQuickLog = function(itemName, category, unit) {
+  _origOpenQuickLog(itemName, category, unit);
+  overlayPushState('quickLogOverlay');
+};
+
+// ── Back button closes overlay instead of leaving app ────────
+window.addEventListener('popstate', (event) => {
+  // Find any open overlay and close it (without pushing another state)
+  const openOverlay = OVERLAYS.find(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('open');
+  });
+  if (openOverlay) {
+    const el = document.getElementById(openOverlay);
+    const sheet = el && el.querySelector('.sheet');
+    if (sheet) {
+      sheet.style.transition = 'transform 300ms cubic-bezier(0.4,0,1,1)';
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        el.classList.remove('open');
+        sheet.style.transform = '';
+        sheet.style.transition = '';
+        // Clear item hash when detail closes
+        if (openOverlay === 'cardDetailOverlay') {
+          history.replaceState({}, '', window.location.pathname);
+        }
+      }, 300);
+    } else if (el) {
+      el.classList.remove('open');
+    }
+    // Prevent the default back navigation
+    event.preventDefault();
+  }
+});
+
+// ── Swipe-to-dismiss on all sheets ──────────────────────────
+function initSwipeToDismiss() {
+  OVERLAYS.forEach(id => {
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    const sheet = overlay.querySelector('.sheet');
+    if (!sheet) return;
+
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    let startTime = 0;
+
+    sheet.addEventListener('touchstart', e => {
+      const touchY = e.touches[0].clientY;
+      const sheetTop = sheet.getBoundingClientRect().top;
+      const handle = sheet.querySelector('.sheet-handle');
+      const handleRect = handle ? handle.getBoundingClientRect() : null;
+      const inHandle = handleRect
+        ? (touchY >= handleRect.top - 8 && touchY <= handleRect.bottom + 8)
+        : (touchY - sheetTop < 40);
+
+      if (!inHandle) return;
+
+      isDragging = true;
+      startY = touchY;
+      currentY = 0;
+      startTime = Date.now();
+      sheet.style.transition = 'none';
+      sheet.classList.add('dragging');
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy < 0) { currentY = 0; return; } // prevent dragging up
+      currentY = dy;
+      sheet.style.transform = `translateY(${dy}px)`;
+    }, { passive: true });
+
+    sheet.addEventListener('touchend', e => {
+      if (!isDragging) return;
+      isDragging = false;
+      sheet.classList.remove('dragging');
+
+      const elapsed = Date.now() - startTime;
+      const velocity = currentY / elapsed; // px/ms
+      const shouldDismiss = currentY > 120 || velocity > 0.5;
+
+      if (shouldDismiss) {
+        sheet.style.transition = 'transform 280ms cubic-bezier(0.4,0,1,1)';
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+          overlay.classList.remove('open');
+          sheet.style.transform = '';
+          sheet.style.transition = '';
+          if (id === 'cardDetailOverlay') {
+            history.replaceState({}, '', window.location.pathname);
+          }
+          // Clean up history state
+          if (history.state && history.state.overlay === id) {
+            history.back();
+          }
+        }, 280);
+      } else {
+        // Snap back
+        sheet.style.transition = 'transform 320ms var(--spring, cubic-bezier(0.34,1.56,0.64,1))';
+        sheet.style.transform = 'translateY(0)';
+        setTimeout(() => { sheet.style.transition = ''; }, 320);
+      }
+    });
+  });
+}
+
+// ── Deep linking — open item detail from URL hash ────────────
+function resolveDeepLink() {
+  const hash = window.location.hash;
+  if (!hash) return;
+  const match = hash.match(/[#&]item=([^&]+)/);
+  if (!match) return;
+
+  const slug = decodeURIComponent(match[1]);
+  // Convert slug back to item name by matching against known entries
+  const itemName = state.entries.find(e => {
+    const s = e.item_name.toLowerCase().replace(/\s+/g,'-');
+    return s === slug;
+  });
+
+  if (itemName) {
+    // Wait for UI to render then open detail
+    setTimeout(() => openCardDetail(itemName.item_name), 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 // QUICK-LOG SHEET
 // ═══════════════════════════════════════════════════════════
 
@@ -4972,7 +5351,7 @@ function populateRecentItems(selectedItem = '') {
   }
 
   if (!recent.length) {
-    row.innerHTML = '<span style="font-size:0.75rem;color:var(--text-tertiary)">Your recent items appear here</span>';
+    row.innerHTML = '<span style="font-size:0.75rem;color:var(--text-3)">Your recent items appear here</span>';
     return;
   }
 
