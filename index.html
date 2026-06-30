@@ -33,6 +33,8 @@
   --green-light: rgba(0,135,90,0.10);
   --gold-light:  rgba(245,166,35,0.12);
   --red-light:   rgba(208,2,27,0.08);
+  --gold-text:   #8A5E00;
+  --bronze-text: #7A5030;
 
   /* Surfaces — pure white to near-white */
   --bg:           #FFFFFF;
@@ -43,7 +45,7 @@
   /* Text — 4-step grey scale */
   --text-1: #0A0A0A;
   --text-2: #444444;
-  --text-3: #888888;
+  --text-3: #6B6B6B;
   --text-4: #BBBBBB;
 
   /* Borders — nearly invisible */
@@ -101,6 +103,8 @@
   --green-light: rgba(0,135,90,0.15);
   --gold-light:  rgba(245,166,35,0.15);
   --red-light:   rgba(208,2,27,0.12);
+  --gold-text:   #FFD066;
+  --bronze-text: #C8A87A;
 }
 
 /* ── RESET ─────────────────────────────────────────────────── */
@@ -628,8 +632,8 @@ a { color: inherit; text-decoration: none; }
 .trend-badge svg { width: 9px; height: 9px; }
 .trend-up     { background: var(--red-light);  color: var(--gh-red); }
 .trend-down   { background: var(--green-light); color: var(--gh-green); }
-.trend-stable { background: var(--gold-light);  color: #9A6200; }
-[data-theme="dark"] .trend-stable { color: var(--gh-gold); }
+.trend-stable { background: var(--gold-light);  color: var(--gold-text); }
+[data-theme="dark"] .trend-stable { color: #FFD066; }
 
 /* ITEM NAME — hero */
 .card-item-name {
@@ -1227,9 +1231,9 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--font-num); font-size: 1rem; font-weight: 700;
   color: var(--text-3); width: 20px; flex-shrink: 0;
 }
-.lb-rank.gold   { color: #C9940A; }
+.lb-rank.gold   { color: var(--gold-text); }
 .lb-rank.silver { color: var(--text-3); }
-.lb-rank.bronze { color: #A07040; }
+.lb-rank.bronze { color: var(--bronze-text); }
 .lb-info { flex: 1; min-width: 0; }
 .lb-name { font-size: 0.84rem; font-weight: 600; }
 .lb-sub  { font-size: 0.72rem; color: var(--text-3); }
@@ -1438,8 +1442,8 @@ a { color: inherit; text-decoration: none; }
 .sync-indicator.error   .sync-dot { background: var(--gh-red); }
 .sync-indicator.error   { color: var(--gh-red); background: var(--red-light); }
 .sync-indicator.offline .sync-dot { background: var(--gh-gold); }
-.sync-indicator.offline { color: #9A6200; background: var(--gold-light); }
-[data-theme="dark"] .sync-indicator.offline { color: var(--gh-gold); }
+.sync-indicator.offline { color: var(--gold-text); background: var(--gold-light); }
+[data-theme="dark"] .sync-indicator.offline { color: #FFD066; }
 @keyframes syncPulse { 0%,100% { opacity:1;transform:scale(1); } 50% { opacity:0.3;transform:scale(0.6); } }
 
 /* ── OFFLINE BANNER ─────────────────────────────────────────── */
@@ -2141,9 +2145,13 @@ a { color: inherit; text-decoration: none; }
       <span class="page-title">Search Prices</span>
     </div>
     <div class="search-wrap" style="padding-top:14px">
-      <div class="search-input-wrap">
+      <div class="search-input-wrap" style="position:relative">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="search" class="search-input" placeholder="Search any item..." id="mainSearch" oninput="doSearch()" autofocus aria-label="Search prices"/>
+        <input type="search" class="search-input" placeholder="Search tomatoes, trotro fare, rice..." id="mainSearch"
+          oninput="doSearch();searchSuggest(this.value)"
+          onkeydown="if(event.key==='Escape'){document.getElementById('searchSuggestList').classList.remove('open');}"
+          autocomplete="off" aria-label="Search prices" aria-autocomplete="list" aria-controls="searchSuggestList"/>
+        <div class="ac-list" id="searchSuggestList" role="listbox" style="top:calc(100% + 4px)"></div>
       </div>
     </div>
     <div class="search-filters">
@@ -2161,6 +2169,8 @@ a { color: inherit; text-decoration: none; }
         <option value="fruits">Fruits</option>
         <option value="household">Household</option>
         <option value="cooking">Cooking</option>
+        <option value="health">Health</option>
+        <option value="services">Services</option>
         <option value="other">Other</option>
       </select>
     </div>
@@ -2281,9 +2291,9 @@ a { color: inherit; text-decoration: none; }
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label" for="logDistrict">District *</label>
-        <select class="form-select" id="logDistrict" disabled required>
-          <option value="">Select district first...</option>
+        <label class="form-label" for="logDistrict">District <span class="opt">(optional)</span></label>
+        <select class="form-select" id="logDistrict" disabled>
+          <option value="">Select region first...</option>
         </select>
       </div>
       <div class="form-group">
@@ -2744,15 +2754,31 @@ a { color: inherit; text-decoration: none; }
         <div>
           <label class="form-label" for="qlUnit">Unit</label>
           <select class="form-select" id="qlUnit">
-            <option value="per item">Per item</option>
-            <option value="per kg">Per kg</option>
-            <option value="per bag">Per bag</option>
-            <option value="per crate">Per crate</option>
-            <option value="per bunch">Per bunch</option>
-            <option value="per tin">Per tin</option>
-            <option value="per litre">Per litre</option>
-            <option value="per sachet bag">Per sachet</option>
-            <option value="per dozen">Per dozen</option>
+            <optgroup label="Food / Market">
+              <option value="per item">Per item</option>
+              <option value="per kg">Per kg</option>
+              <option value="per bag">Per bag</option>
+              <option value="per crate">Per crate</option>
+              <option value="per bunch">Per bunch</option>
+              <option value="per tin">Per tin</option>
+              <option value="per litre">Per litre</option>
+              <option value="per sachet">Per sachet</option>
+              <option value="per portion">Per portion</option>
+              <option value="per dozen">Per dozen</option>
+            </optgroup>
+            <optgroup label="Services">
+              <option value="per trip">Per trip</option>
+              <option value="per ride">Per ride</option>
+              <option value="per month">Per month</option>
+              <option value="per session">Per session</option>
+              <option value="per hour">Per hour</option>
+              <option value="per GB">Per GB</option>
+              <option value="per bundle">Per bundle</option>
+              <option value="per transaction">Per transaction</option>
+              <option value="per print">Per print</option>
+              <option value="per term">Per term</option>
+              <option value="flat fee">Flat fee</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -2780,6 +2806,13 @@ a { color: inherit; text-decoration: none; }
         <select class="form-select" id="qlDistrict" disabled>
           <option value="">Select district...</option>
         </select>
+      </div>
+
+      <!-- Note (optional) -->
+      <div class="quick-log-field">
+        <label class="form-label" for="qlNote">Note <span class="opt">(optional)</span></label>
+        <input type="text" class="form-input" id="qlNote"
+          placeholder="e.g. bought in bulk, price reduced..." maxlength="120"/>
       </div>
 
       <button class="btn btn-primary btn-full" onclick="submitQuickLog()" style="margin-top:4px">
@@ -3815,6 +3848,60 @@ function runAudit() {
 // ═══════════════════════════════════════════════════════════
 // SEARCH
 // ═══════════════════════════════════════════════════════════
+// ── Search page suggestion autocomplete ─────────────────────
+function searchSuggest(val) {
+  const list = document.getElementById('searchSuggestList');
+  if (!list) return;
+  const q = (val || '').toLowerCase().trim();
+
+  if (!q || q.length < 1) { list.classList.remove('open'); return; }
+
+  // Get suggestions from both seed items and already-logged items
+  const allItems = getItemNames();
+  const matches = allItems
+    .filter(i => i.name.toLowerCase().includes(q))
+    .sort((a, b) => {
+      // Prioritise starts-with over contains
+      const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+      const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+      return aStarts - bStarts || a.name.localeCompare(b.name);
+    })
+    .slice(0, 8);
+
+  if (!matches.length) { list.classList.remove('open'); return; }
+
+  list.innerHTML = matches.map(i => {
+    // Bold the matching part
+    const idx   = i.name.toLowerCase().indexOf(q);
+    const before = i.name.slice(0, idx);
+    const match  = i.name.slice(idx, idx + q.length);
+    const after  = i.name.slice(idx + q.length);
+    return `<div class="ac-item" role="option"
+      onclick="pickSearchSuggestion('${i.name.replace(/'/g,"\\'")}')">
+      <span>${before}<strong>${match}</strong>${after}</span>
+      <span class="ac-cat">${CATEGORIES[i.cat] || ''}</span>
+    </div>`;
+  }).join('');
+
+  list.classList.add('open');
+}
+
+function pickSearchSuggestion(name) {
+  const input = document.getElementById('mainSearch');
+  if (input) { input.value = name; }
+  const list = document.getElementById('searchSuggestList');
+  if (list) list.classList.remove('open');
+  doSearch();
+}
+
+// Close suggestion list on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#mainSearch') && !e.target.closest('#searchSuggestList')) {
+    const list = document.getElementById('searchSuggestList');
+    if (list) list.classList.remove('open');
+  }
+});
+
 function doSearch() {
   const q = document.getElementById('mainSearch').value.trim();
   const region = document.getElementById('searchRegion').value;
@@ -5788,14 +5875,16 @@ function submitQuickLog() {
   const region   = document.getElementById('qlRegion').value;
   const district = document.getElementById('qlDistrict').value;
   const market   = sanitise(document.getElementById('qlMarket').value);
+  const note     = sanitise(document.getElementById('qlNote')?.value || '');
 
   if (!item)            { toast('Enter an item name',   'Kyerɛ item no din',  'error'); return; }
   if (!price || price <= 0) { toast('Enter a valid price', 'Kyerɛ price a ɛtɔ so', 'error'); return; }
   if (!region)          { toast('Select your region',   'Paw wo region',      'error'); return; }
 
-  // Auto-detect category from past entries
+  // Auto-detect category — check logged entries first, then seed list, fallback to 'other'
   const pastEntry = state.entries.find(e => e.item_name.toLowerCase() === item.toLowerCase());
-  const cat = pastEntry ? pastEntry.category : 'other';
+  const seedMatch = SEED_ITEMS.find(s => s.name.toLowerCase() === item.toLowerCase());
+  const cat = pastEntry?.category || seedMatch?.cat || 'other';
 
   const today = new Date().toISOString().split('T')[0];
   const entry = {
@@ -5807,7 +5896,7 @@ function submitQuickLog() {
     market_shop: market,
     date_logged: today,
     user_id:     state.user.id,
-    note:        '',
+    note,
     created_at:  new Date().toISOString()
   };
 
