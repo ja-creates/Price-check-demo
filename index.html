@@ -2873,7 +2873,7 @@ a { color: inherit; text-decoration: none; }
       </div>
 
       <!-- Alert row -->
-      <div style="padding:0 var(--s5) var(--s5);display:flex;align-items:center;gap:var(--s3)">
+      <div style="padding:0 var(--s5) var(--s4);display:flex;align-items:center;gap:var(--s3)">
         <input type="number" id="alertTargetPrice" class="form-input"
           style="flex:1;padding:10px var(--s4)" placeholder="Alert me when price hits GH₵..."
           inputmode="decimal" min="0" step="0.01" aria-label="Alert target price"/>
@@ -2882,9 +2882,27 @@ a { color: inherit; text-decoration: none; }
           <option value="above">Rises above</option>
         </select>
         <button class="btn-neutral-sm" onclick="addAlertFromDetail()" style="flex-shrink:0;padding:10px 14px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9H18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
           Alert
         </button>
+      </div>
+
+      <!-- Compare row -->
+      <div style="padding:0 var(--s5) var(--s5);border-top:1px solid var(--line);padding-top:var(--s4)">
+        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-3);margin-bottom:var(--s3)">Compare with another item</div>
+        <div style="display:flex;gap:var(--s2);margin-bottom:var(--s3)">
+          <div class="ac-wrap" style="flex:1;position:relative">
+            <input type="text" class="form-input" id="compareItemInput"
+              placeholder="Type item name..." style="padding:10px var(--s4)"
+              oninput="compareAutocomplete(this.value)" autocomplete="off"/>
+            <div class="ac-list" id="compareACList" role="listbox"></div>
+          </div>
+          <button class="btn btn-primary" onclick="runComparison()" style="padding:10px var(--s4);flex-shrink:0">
+            Compare
+          </button>
+        </div>
+        <!-- Comparison result panel -->
+        <div id="comparePanel" style="display:none"></div>
       </div>
 
     </div>
@@ -2978,22 +2996,22 @@ a { color: inherit; text-decoration: none; }
 // DATA — GHANA REGIONS & DISTRICTS
 // ═══════════════════════════════════════════════════════════
 const GHANA_LOCATIONS = {
-  "Greater Accra": ["Accra Metropolitan","Tema Metropolitan","Ga East","Ga West","Ga South","Ga Central","Ga North","Adentan","Ashaiman","Ledzokuku","Krowor","La Dade-Kotopon","La Nkwantanang Madina","Ningo-Prampram","Shai-Osudoku","Ada East","Ada West","Okaikwei North"],
-  "Ashanti": ["Kumasi Metropolitan","Oforikrom","Asokwa","Kwadaso","Suame","Tafo","Asokore Mampong","Bosomtwe","Ejisu","Ejura-Sekyedumase","Juaben","Kwabre East","Afigya-Kwabre South","Afigya-Kwabre North","Atwima Kwanwoma","Atwima Mponua","Atwima Nwabiagya North","Atwima Nwabiagya South","Adansi North","Adansi South","Adansi Asokwa","Amansie Central","Amansie South","Amansie West","Asante Akim Central","Asante Akim North","Asante Akim South","Bekwai","Bosome Freho","Kumawu","Mampong","Offinso North","Offinso South","Sekyere Afram Plains","Sekyere Central","Sekyere East","Sekyere Kumawu","Sekyere South"],
-  "Western": ["Sekondi-Takoradi Metropolitan","Ahanta West","Effia-Kwesimintsim","Ellembelle","Jomoro","Mpohor","Nzema East","Prestea-Huni Valley","Shama","Tarkwa-Nsuaem","Wassa Amenfi Central","Wassa Amenfi East","Wassa Amenfi West","Wassa East"],
-  "Western North": ["Aowin","Bia East","Bia West","Bibiani-Anhwiaso-Bekwai","Bodi","Juaboso","Sefwi Akontombra","Sefwi Wiawso","Suaman"],
-  "Eastern": ["Akuapim North","Akuapim South","Akyemansa","Asene-Manso-Akroso","Atiwa East","Atiwa West","Ayensuano","Birim Central","Birim North","Birim South","Denkyembour","Fanteakwa North","Fanteakwa South","Kwaebibirem","Kwahu Afram Plains North","Kwahu Afram Plains South","Kwahu East","Kwahu South","Kwahu West","Lower Manya Krobo","New Juaben North","New Juaben South","Nsawam-Adoagyiri","Okere","Suhum","Upper Manya Krobo","Upper West Akim","West Akim","Yilo Krobo"],
-  "Central": ["Cape Coast Metropolitan","Abura-Asebu-Kwamankese","Agona East","Agona West","Ajumako-Enyan-Esiam","Asikuma-Odoben-Brakwa","Assin Central","Assin North","Assin South","Awutu Senya East","Awutu Senya West","Effutu","Ekumfi","Gomoa Central","Gomoa East","Gomoa West","Hemang Lower Denkyira","Komenda-Edina-Eguafo-Abirem","Mfantsiman","Twifo-Atti-Morkwa","Twifo-Heman-Lower Denkyira","Upper Denkyira East","Upper Denkyira West"],
-  "Volta": ["Ho Municipal","Adaklu","Afadjato South","Agotime-Ziope","Akatsi North","Akatsi South","Anloga","Central Tongu","Ho West","Hohoe","Keta","Ketu North","Ketu South","Kpando","North Dayi","North Tongu","South Dayi","South Tongu"],
-  "Oti": ["Biakoye","Jasikan","Kadjebi","Krachi East","Krachi Nchumuru","Krachi West","Nkwanta North","Nkwanta South"],
-  "Northern": ["Tamale Metropolitan","Gushegu","Karaga","Kpandai","Kumbungu","Mion","Nanton","Nanumba North","Nanumba South","Saboba","Sagnarigu","Savelugu","Tatale-Sangule","Tolon","Yendi","Zabzugu"],
-  "Savannah": ["Bole","Central Gonja","East Gonja","North East Gonja","North Gonja","Sawla-Tuna-Kalba","West Gonja"],
-  "North East": ["Bunkpurugu-Nakpayili","Chereponi","East Mamprusi","Mamprugu-Moagduri","West Mamprusi","Yunyoo-Nasuan"],
-  "Upper East": ["Bolgatanga Municipal","Bawku Municipal","Bawku West","Binduri","Bongo","Builsa North","Builsa South","Garu","Kassena-Nankana East","Kassena-Nankana West","Nabdam","Pusiga","Talensi","Tempane"],
-  "Upper West": ["Wa Municipal","Daffiama-Bussie-Issa","Jirapa","Lambussie-Karni","Lawra","Nadowli-Kaleo","Nandom","Sissala East","Sissala West","Wa East","Wa West"],
-  "Bono": ["Sunyani Municipal","Berekum East","Berekum West","Dormaa Central","Dormaa East","Dormaa West","Jaman North","Jaman South","Tain","Wenchi"],
-  "Bono East": ["Techiman Municipal","Atebubu-Amantin","Kintampo North","Kintampo South","Nkoranza North","Nkoranza South","Pru East","Pru West","Sene East","Sene West","Techiman North"],
-  "Ahafo": ["Asunafo North","Asunafo South","Asutifi North","Asutifi South","Tano North","Tano South"]
+  "Greater Accra": ["Ablekuma Central", "Ablekuma North", "Ablekuma West", "Accra Metropolitan", "Ada East", "Ada West", "Adentan", "Ashaiman", "Ga Central", "Ga East", "Ga North", "Ga South", "Ga West", "Krowor", "La Dade-Kotopon", "La Nkwantanang Madina", "Ledzokuku", "Ningo-Prampram", "Okaikwei North", "Shai-Osudoku", "Tema Metropolitan"],
+  "Ashanti": ["Adansi Asokwa", "Adansi North", "Adansi South", "Afigya-Kwabre North", "Afigya-Kwabre South", "Ahafo Ano North", "Ahafo Ano South East", "Akrofuom", "Amansie Central", "Amansie South", "Amansie West", "Asante Akim Central", "Asante Akim North", "Asante Akim South", "Asokore Mampong", "Asokwa", "Atwima Kwanwoma", "Atwima Mponua", "Atwima Nwabiagya North", "Atwima Nwabiagya South", "Bekwai", "Bosome Freho", "Bosomtwe", "Ejisu", "Ejura-Sekyedumase", "Juaben", "Kumasi Metropolitan", "Kumawu", "Kwabre East", "Kwadaso", "Mampong", "Obuasi East", "Obuasi Municipal", "Offinso North", "Offinso South", "Oforikrom", "Sekyere Afram Plains", "Sekyere Central", "Sekyere East", "Sekyere Kumawu", "Sekyere South", "Suame", "Tafo"],
+  "Western": ["Ahanta West", "Effia-Kwesimintsim", "Ellembelle", "Jomoro", "Mpohor", "Nzema East", "Prestea-Huni Valley", "Sekondi-Takoradi Metropolitan", "Shama", "Tarkwa-Nsuaem", "Wassa Amenfi Central", "Wassa Amenfi East", "Wassa Amenfi West", "Wassa East"],
+  "Western North": ["Aowin", "Bia East", "Bia West", "Bibiani-Anhwiaso-Bekwai", "Bodi", "Juaboso", "Sefwi Akontombra", "Sefwi Wiawso", "Suaman"],
+  "Eastern": ["Abuakwa North", "Abuakwa South", "Achiase", "Akuapim North", "Akuapim South", "Akyemansa", "Asene-Manso-Akroso", "Atiwa East", "Atiwa West", "Ayensuano", "Birim Central", "Birim North", "Birim South", "Denkyembour", "Fanteakwa North", "Fanteakwa South", "Kwaebibirem", "Kwahu Afram Plains North", "Kwahu Afram Plains South", "Kwahu East", "Kwahu South", "Kwahu West", "Lower Manya Krobo", "New Juaben North", "New Juaben South", "Nsawam-Adoagyiri", "Okere", "Suhum", "Upper Manya Krobo", "Upper West Akim", "West Akim", "Yilo Krobo"],
+  "Central": ["Abura-Asebu-Kwamankese", "Agona East", "Agona West", "Ajumako-Enyan-Esiam", "Asikuma-Odoben-Brakwa", "Assin Central", "Assin North", "Assin South", "Awutu Senya East", "Awutu Senya West", "Cape Coast Metropolitan", "Effutu", "Ekumfi", "Gomoa Central", "Gomoa East", "Gomoa West", "Hemang Lower Denkyira", "Komenda-Edina-Eguafo-Abirem", "Mfantsiman", "Twifo-Atti-Morkwa", "Twifo-Heman-Lower Denkyira", "Upper Denkyira East", "Upper Denkyira West"],
+  "Volta": ["Adaklu", "Afadjato South", "Agotime-Ziope", "Akatsi North", "Akatsi South", "Anloga", "Central Tongu", "Ho Municipal", "Ho West", "Hohoe", "Keta", "Ketu North", "Ketu South", "Kpando", "North Dayi", "North Tongu", "South Dayi", "South Tongu"],
+  "Oti": ["Biakoye", "Guan", "Jasikan", "Kadjebi", "Krachi East", "Krachi Nchumuru", "Krachi West", "Nkwanta North", "Nkwanta South"],
+  "Northern": ["Gushegu", "Karaga", "Kpandai", "Kumbungu", "Mion", "Nanton", "Nanumba North", "Nanumba South", "Saboba", "Sagnarigu", "Savelugu", "Tamale Metropolitan", "Tatale-Sangule", "Tolon", "Yendi", "Zabzugu"],
+  "Savannah": ["Bole", "Central Gonja", "East Gonja", "North East Gonja", "North Gonja", "Sawla-Tuna-Kalba", "West Gonja"],
+  "North East": ["Bunkpurugu-Nakpayili", "Chereponi", "East Mamprusi", "Mamprugu-Moagduri", "West Mamprusi", "Yunyoo-Nasuan"],
+  "Upper East": ["Bawku Municipal", "Bawku West", "Binduri", "Bolgatanga Municipal", "Bongo", "Builsa North", "Builsa South", "Garu", "Kassena-Nankana East", "Kassena-Nankana West", "Nabdam", "Pusiga", "Talensi", "Tempane"],
+  "Upper West": ["Daffiama-Bussie-Issa", "Jirapa", "Lambussie-Karni", "Lawra", "Nadowli-Kaleo", "Nandom", "Sissala East", "Sissala West", "Wa East", "Wa Municipal", "Wa West"],
+  "Bono": ["Berekum East", "Berekum West", "Dormaa Central", "Dormaa East", "Dormaa West", "Jaman North", "Jaman South", "Sunyani Municipal", "Tain", "Wenchi"],
+  "Bono East": ["Atebubu-Amantin", "Kintampo North", "Kintampo South", "Nkoranza North", "Nkoranza South", "Pru East", "Pru West", "Sene East", "Sene West", "Techiman Municipal", "Techiman North"],
+  "Ahafo": ["Asunafo North", "Asunafo South", "Asutifi North", "Asutifi South", "Tano North", "Tano South"],
 };
 
 const CATEGORIES = {
@@ -5059,6 +5077,14 @@ function openCardDetail(itemName) {
   // Clear quick log input
   document.getElementById('detailQuickPrice').value = '';
 
+  // Reset compare panel
+  const comparePanel = document.getElementById('comparePanel');
+  if (comparePanel) { comparePanel.style.display = 'none'; comparePanel.innerHTML = ''; }
+  const compareInput = document.getElementById('compareItemInput');
+  if (compareInput) compareInput.value = '';
+  const compareACList = document.getElementById('compareACList');
+  if (compareACList) compareACList.classList.remove('open');
+
   document.getElementById('cardDetailOverlay').classList.add('open');
 }
 
@@ -5929,6 +5955,170 @@ function addAlertFromDetail() {
   addAlert(_activeDetailItem, price, direction);
   document.getElementById('alertTargetPrice').value = '';
   requestNotificationPermission();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRICE COMPARISON MODE
+// Compare any two items side by side with visual bars
+// ═══════════════════════════════════════════════════════════
+
+function compareAutocomplete(val) {
+  const list = document.getElementById('compareACList');
+  if (!list) return;
+  const q = (val || '').toLowerCase().trim();
+  if (!q) { list.classList.remove('open'); return; }
+
+  const items = getItemNames()
+    .filter(i => i.name.toLowerCase().includes(q) &&
+                 i.name.toLowerCase() !== (_activeDetailItem || '').toLowerCase())
+    .slice(0, 6);
+
+  if (!items.length) { list.classList.remove('open'); return; }
+
+  list.innerHTML = items.map(i => `
+    <div class="ac-item" role="option" onclick="pickCompareItem('${i.name.replace(/'/g,"\\'")}')">
+      <span>${i.name}</span>
+      <span class="ac-cat">${CATEGORIES[i.cat] || ''}</span>
+    </div>`).join('');
+  list.classList.add('open');
+}
+
+function pickCompareItem(name) {
+  const input = document.getElementById('compareItemInput');
+  if (input) input.value = name;
+  const list = document.getElementById('compareACList');
+  if (list) list.classList.remove('open');
+}
+
+function runComparison() {
+  const itemB = document.getElementById('compareItemInput').value.trim();
+  const itemA = _activeDetailItem;
+
+  if (!itemA || !itemB) {
+    toast('Select an item to compare', '', 'error'); return;
+  }
+  if (itemA.toLowerCase() === itemB.toLowerCase()) {
+    toast('Pick a different item to compare', '', 'warning'); return;
+  }
+
+  // Get entries for both items
+  const entriesA = state.entries.filter(e => e.item_name.toLowerCase() === itemA.toLowerCase());
+  const entriesB = state.entries.filter(e => e.item_name.toLowerCase() === itemB.toLowerCase());
+
+  if (!entriesA.length) {
+    toast(`No prices for ${itemA} yet`, '', 'warning'); return;
+  }
+  if (!entriesB.length) {
+    toast(`No prices for ${itemB} yet`, 'Log some first', 'warning'); return;
+  }
+
+  const avgA = trimmedMean(entriesA.map(e => e.price_ghs));
+  const avgB = trimmedMean(entriesB.map(e => e.price_ghs));
+  const unitA = entriesA[entriesA.length - 1].unit;
+  const unitB = entriesB[entriesB.length - 1].unit;
+
+  const maxAvg = Math.max(avgA, avgB);
+  const barA   = Math.round((avgA / maxAvg) * 100);
+  const barB   = Math.round((avgB / maxAvg) * 100);
+
+  // Trend for each
+  const trendA = entriesA.length > 1
+    ? (entriesA[entriesA.length-1].price_ghs > entriesA[0].price_ghs ? '↑' : '↓')
+    : '→';
+  const trendB = entriesB.length > 1
+    ? (entriesB[entriesB.length-1].price_ghs > entriesB[0].price_ghs ? '↑' : '↓')
+    : '→';
+
+  // Cheaper label
+  const cheaperLabel = avgA < avgB
+    ? `${itemA} is <strong>GH₵${(avgB - avgA).toFixed(2)} cheaper</strong>`
+    : avgB < avgA
+      ? `${itemB} is <strong>GH₵${(avgA - avgB).toFixed(2)} cheaper</strong>`
+      : `Both items cost the same`;
+
+  const colA = avgA <= avgB ? 'var(--gh-green)' : 'var(--gh-red)';
+  const colB = avgB <= avgA ? 'var(--gh-green)' : 'var(--gh-red)';
+
+  const panel = document.getElementById('comparePanel');
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="background:var(--surface);border-radius:var(--r2);padding:var(--s4);animation:pageIn 280ms var(--ease-out) both">
+
+      <!-- Item A -->
+      <div style="margin-bottom:var(--s4)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-weight:700;font-size:0.9rem">${itemA}</span>
+          <span style="font-family:var(--font-num);font-weight:700;color:${colA}">
+            GH₵${avgA.toFixed(2)} <small style="font-weight:400;color:var(--text-3);font-family:var(--font)">${unitA}</small>
+            <span style="font-size:0.75rem;margin-left:4px">${trendA}</span>
+          </span>
+        </div>
+        <div style="height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:0%;background:${colA};border-radius:4px;transition:width 600ms var(--ease-out)"
+               data-target="${barA}" class="compare-bar"></div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-3);margin-top:4px">${entriesA.length} entr${entriesA.length===1?'y':'ies'}</div>
+      </div>
+
+      <!-- Item B -->
+      <div style="margin-bottom:var(--s4)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-weight:700;font-size:0.9rem">${itemB}</span>
+          <span style="font-family:var(--font-num);font-weight:700;color:${colB}">
+            GH₵${avgB.toFixed(2)} <small style="font-weight:400;color:var(--text-3);font-family:var(--font)">${unitB}</small>
+            <span style="font-size:0.75rem;margin-left:4px">${trendB}</span>
+          </span>
+        </div>
+        <div style="height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:0%;background:${colB};border-radius:4px;transition:width 600ms var(--ease-out)"
+               data-target="${barB}" class="compare-bar"></div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-3);margin-top:4px">${entriesB.length} entr${entriesB.length===1?'y':'ies'}</div>
+      </div>
+
+      <!-- Verdict -->
+      <div style="padding:var(--s3) var(--s4);background:var(--green-light);border-radius:var(--r2);
+                  border-left:3px solid var(--gh-green);font-size:0.82rem;color:var(--text-1)">
+        ${cheaperLabel}
+      </div>
+
+      <!-- Share comparison -->
+      <button class="btn-neutral-sm" style="margin-top:var(--s3);width:100%;justify-content:center;display:flex;gap:6px"
+        onclick="shareComparison('${itemA.replace(/'/g,"\\'")}',${avgA.toFixed(2)},'${unitA}','${itemB.replace(/'/g,"\\'")}',${avgB.toFixed(2)},'${unitB}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share comparison
+      </button>
+    </div>`;
+
+  // Animate bars on next frame
+  requestAnimationFrame(() => {
+    panel.querySelectorAll('.compare-bar').forEach(bar => {
+      bar.style.width = bar.dataset.target + '%';
+    });
+  });
+
+  haptic('light');
+}
+
+function shareComparison(itemA, avgA, unitA, itemB, avgB, unitB) {
+  const cheaper = avgA <= avgB ? itemA : itemB;
+  const saving  = Math.abs(avgA - avgB).toFixed(2);
+  const msg = [
+    '🇬🇭 *PriceCh3ck GH — Price Comparison* 🇬🇭',
+    '',
+    `📊 ${itemA} vs ${itemB}`,
+    '',
+    `• *${itemA}*: GH₵${avgA} ${unitA}`,
+    `• *${itemB}*: GH₵${avgB} ${unitB}`,
+    '',
+    `💚 ${cheaper} saves you GH₵${saving}`,
+    '',
+    '─────────────────────',
+    `Compare prices at 👉 ${APP_URL}`,
+  ].join('\n');
+
+  const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 // ═══════════════════════════════════════════════════════════
